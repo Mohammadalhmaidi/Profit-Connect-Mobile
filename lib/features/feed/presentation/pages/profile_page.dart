@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../core/routes/app_router.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../auth/presentation/bloc/auth_bloc.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -57,11 +60,11 @@ class ProfilePage extends StatelessWidget {
   }
 
   void _handleLogout(BuildContext context) {
-    // Navigate back to Login and clear the stack
+    context.read<AuthBloc>().add(LogoutRequested());
     Navigator.pushNamedAndRemoveUntil(
       context,
       AppRouter.login,
-          (route) => false,
+      (route) => false,
     );
   }
 }
@@ -82,7 +85,7 @@ class _ProfileHeader extends StatelessWidget {
               CircleAvatar(
                 radius: 60.r,
                 backgroundColor: AppColors.chipUnselected,
-                backgroundImage: const NetworkImage(
+                backgroundImage: const CachedNetworkImageProvider(
                   'https://i.pravatar.cc/300?u=mohammad',
                 ),
               ),

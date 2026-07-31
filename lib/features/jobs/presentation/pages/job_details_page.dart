@@ -1,11 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/media_url_helper.dart';
+import '../../../../core/utils/ui_utils.dart';
+import '../../../../core/di/dependency_injection.dart';
+import '../../../../api_service.dart';
+import '../../domain/entities/job_entity.dart';
 import '../widgets/job_info_pill.dart';
 import '../widgets/requirement_list_item.dart';
 
 class JobDetailsPage extends StatelessWidget {
-  const JobDetailsPage({super.key});
+  final JobEntity? job;
+
+  const JobDetailsPage({super.key, this.job});
+
+  String get _title => job?.title ?? 'Job Details';
+  String get _company => job?.companyName ?? '';
+  String get _location => job?.location ?? '';
+
+  String _salaryText() {
+    final salary = job?.salary;
+    if (salary == null || (salary.min == 0 && salary.max == 0)) {
+      return 'Salary on request';
+    }
+    return '${salary.currency} ${salary.min.toInt()} - ${salary.max.toInt()}';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -13,7 +32,6 @@ class JobDetailsPage extends StatelessWidget {
       backgroundColor: Colors.white,
       body: Stack(
         children: [
-          // Main Scrollable Content
           SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -26,7 +44,7 @@ class JobDetailsPage extends StatelessWidget {
                     children: [
                       SizedBox(height: 20.h),
                       Text(
-                        'Senior Experience Designer',
+                        _title,
                         style: TextStyle(
                           color: AppColors.textPrimary,
                           fontSize: 24.sp,
@@ -35,7 +53,7 @@ class JobDetailsPage extends StatelessWidget {
                       ),
                       SizedBox(height: 4.h),
                       Text(
-                        'TechFlow Solutions',
+                        _company,
                         style: TextStyle(
                           color: AppColors.accentCyan,
                           fontSize: 18.sp,
@@ -43,42 +61,41 @@ class JobDetailsPage extends StatelessWidget {
                         ),
                       ),
                       SizedBox(height: 8.h),
-                      Row(
-                        children: [
-                          Icon(Icons.location_on, color: AppColors.textHint, size: 16.sp),
-                          SizedBox(width: 4.w),
-                          Text(
-                            'San Francisco, CA (Remote)',
-                            style: TextStyle(
-                              color: AppColors.textSecondary,
-                              fontSize: 14.sp,
+                      if (_location.isNotEmpty) ...[
+                        Row(
+                          children: [
+                            Icon(Icons.location_on, color: AppColors.textHint, size: 16.sp),
+                            SizedBox(width: 4.w),
+                            Text(
+                              _location,
+                              style: TextStyle(
+                                color: AppColors.textSecondary,
+                                fontSize: 14.sp,
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
+                          ],
+                        ),
+                      ],
                       SizedBox(height: 24.h),
-                      // Info Pills
                       SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
                         child: Row(
-                          children: const [
-                            JobInfoPill(icon: Icons.payments_outlined, label: '\$140k - \$185k'),
-                            JobInfoPill(icon: Icons.groups_outlined, label: '124 Applicants'),
-                            JobInfoPill(icon: Icons.work_outline, label: 'Full-time'),
+                          children: [
+                            JobInfoPill(icon: Icons.payments_outlined, label: _salaryText()),
+                            JobInfoPill(icon: Icons.work_outline, label: job?.type ?? 'Full-time'),
+                            JobInfoPill(icon: Icons.schedule, label: job?.workPlace ?? 'On-site'),
                           ],
                         ),
                       ),
                       SizedBox(height: 24.h),
-                      // Level & Posted Row
                       Row(
                         children: [
-                          _buildInfoCard('LEVEL', 'Senior (5+ yrs)'),
+                          _buildInfoCard('LEVEL', job?.workLevel ?? 'N/A'),
                           SizedBox(width: 16.w),
-                          _buildInfoCard('POSTED', '2 days ago'),
+                          _buildInfoCard('STATUS', job?.status ?? 'Open'),
                         ],
                       ),
                       SizedBox(height: 32.h),
-                      // About Section
                       Text(
                         'About the job',
                         style: TextStyle(
@@ -89,7 +106,9 @@ class JobDetailsPage extends StatelessWidget {
                       ),
                       SizedBox(height: 12.h),
                       Text(
-                        "We're looking for a Senior Product Designer to join our Core Experience team. You'll be responsible for crafting the future of our financial tools, focusing on simplicity, accessibility, and high-performance design patterns. You will collaborate closely with engineering and product leads to drive user-centric solutions.",
+                        (job?.description.isNotEmpty ?? false)
+                            ? job!.description
+                            : 'No description provided for this job.',
                         style: TextStyle(
                           color: AppColors.textSecondary,
                           fontSize: 15.sp,
@@ -97,7 +116,6 @@ class JobDetailsPage extends StatelessWidget {
                         ),
                       ),
                       SizedBox(height: 32.h),
-                      // Requirements Section
                       Text(
                         'Requirements',
                         style: TextStyle(
@@ -107,13 +125,13 @@ class JobDetailsPage extends StatelessWidget {
                         ),
                       ),
                       SizedBox(height: 16.h),
-                      const RequirementListItem(text: '5+ years of experience in digital product design.'),
-                      const RequirementListItem(text: 'Strong portfolio showcasing UX/UI skills and systems thinking.'),
-                      const RequirementListItem(text: 'Proficiency in Figma and interactive prototyping tools.'),
-                      const RequirementListItem(text: 'Experience working in an Agile environment with cross-functional teams.'),
-                      const RequirementListItem(text: 'Deep understanding of iOS and Android design patterns.'),
+                      if (job?.requirements.isNotEmpty ?? false)
+                        ...job!.requirements.map(
+                          (r) => RequirementListItem(text: r),
+                        )
+                      else
+                        const RequirementListItem(text: 'No requirements specified.'),
                       SizedBox(height: 32.h),
-                      // Location Section
                       Text(
                         'Location',
                         style: TextStyle(
@@ -123,20 +141,18 @@ class JobDetailsPage extends StatelessWidget {
                         ),
                       ),
                       SizedBox(height: 16.h),
-                      _buildMapSection(),
-                      SizedBox(height: 120.h), // Extra space for sticky button
+                      _buildLocationSection(),
+                      SizedBox(height: 120.h),
                     ],
                   ),
                 ),
               ],
             ),
           ),
-          // Fixed Bottom Button
           Align(
             alignment: Alignment.bottomCenter,
-            child: _buildApplyButton(),
+            child: _buildApplyButton(context),
           ),
-          // Top Navigation Bar
           _buildTopNav(context),
         ],
       ),
@@ -144,6 +160,7 @@ class JobDetailsPage extends StatelessWidget {
   }
 
   Widget _buildHeader() {
+    final logoUrl = MediaUrlHelper.resolve(job?.companyLogo);
     return Stack(
       clipBehavior: Clip.none,
       children: [
@@ -151,9 +168,10 @@ class JobDetailsPage extends StatelessWidget {
           height: 200.h,
           width: double.infinity,
           decoration: const BoxDecoration(
-            image: DecorationImage(
-              image: NetworkImage('https://placeholder.com/office_background'),
-              fit: BoxFit.cover,
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFF004D40), Color(0xFF00897B)],
             ),
           ),
         ),
@@ -164,7 +182,7 @@ class JobDetailsPage extends StatelessWidget {
             width: 80.w,
             height: 80.w,
             decoration: BoxDecoration(
-              color: const Color(0xFF004D40), // Dark green from logo
+              color: Colors.white,
               borderRadius: BorderRadius.circular(16.r),
               border: Border.all(color: Colors.white, width: 4.w),
               boxShadow: [
@@ -175,9 +193,20 @@ class JobDetailsPage extends StatelessWidget {
                 ),
               ],
             ),
-            child: Center(
-              child: Icon(Icons.token, color: Colors.white, size: 40.sp),
-            ),
+            child: logoUrl.isEmpty
+                ? Center(
+                    child: Icon(Icons.token, color: const Color(0xFF004D40), size: 40.sp),
+                  )
+                : ClipRRect(
+                    borderRadius: BorderRadius.circular(12.r),
+                    child: Image.network(
+                      logoUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Center(
+                        child: Icon(Icons.token, color: const Color(0xFF004D40), size: 40.sp),
+                      ),
+                    ),
+                  ),
           ),
         ),
       ],
@@ -263,25 +292,37 @@ class JobDetailsPage extends StatelessWidget {
     );
   }
 
-  Widget _buildMapSection() {
+  Widget _buildLocationSection() {
     return Container(
       height: 180.h,
       width: double.infinity,
       decoration: BoxDecoration(
         color: const Color(0xFFE0F2F1),
         borderRadius: BorderRadius.circular(16.r),
-        image: const DecorationImage(
-          image: NetworkImage('https://placeholder.com/map_image'),
-          fit: BoxFit.cover,
-        ),
       ),
       child: Center(
-        child: Icon(Icons.location_on, color: AppColors.accentCyan, size: 40.sp),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.location_on, color: AppColors.accentCyan, size: 40.sp),
+            if (_location.isNotEmpty) ...[
+              SizedBox(height: 8.h),
+              Text(
+                _location,
+                style: TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 15.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildApplyButton() {
+  Widget _buildApplyButton(BuildContext context) {
     return Container(
       padding: EdgeInsets.all(24.w),
       decoration: BoxDecoration(
@@ -298,7 +339,33 @@ class JobDetailsPage extends StatelessWidget {
         width: double.infinity,
         height: 56.h,
         child: ElevatedButton.icon(
-          onPressed: () {},
+          onPressed: () async {
+            final jobId = job?.id;
+            if (jobId == null || jobId.isEmpty) {
+              UIUtils.showSnackBar(
+                context: context,
+                message: 'Unable to apply for this job',
+                isError: true,
+              );
+              return;
+            }
+            try {
+              await sl<ApiService>().applyJob(jobId);
+              if (!context.mounted) return;
+              UIUtils.showSnackBar(
+                context: context,
+                message: 'Application submitted for ${_title}',
+                isError: false,
+              );
+            } catch (_) {
+              if (!context.mounted) return;
+              UIUtils.showSnackBar(
+                context: context,
+                message: 'Failed to submit application. Please try again.',
+                isError: true,
+              );
+            }
+          },
           icon: Icon(Icons.bolt, color: Colors.white, size: 24.sp),
           label: Text(
             'Easy Apply',

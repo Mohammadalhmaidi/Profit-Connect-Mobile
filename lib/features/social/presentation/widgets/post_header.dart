@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../core/theme/app_colors.dart';
 
 class PostHeader extends StatelessWidget {
@@ -14,7 +15,7 @@ class PostHeader extends StatelessWidget {
         children: [
           CircleAvatar(
             radius: 24.r,
-            backgroundImage: const NetworkImage('https://i.pravatar.cc/150?u=jane'),
+            backgroundImage: const CachedNetworkImageProvider('https://i.pravatar.cc/150?u=jane'),
           ),
           SizedBox(width: 12.w),
           Expanded(

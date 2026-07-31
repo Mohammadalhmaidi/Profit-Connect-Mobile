@@ -1,8 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/di/dependency_injection.dart';
 import '../../../../core/routes/app_router.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/media_url_helper.dart';
+import '../../../../core/utils/ui_utils.dart';
+import '../../../../api_service.dart';
 import '../widgets/message_list_tile.dart';
+
+class ConversationSummary {
+  final String id;
+  final String peerId;
+  final String peerName;
+  final String peerAvatar;
+  final String lastMessage;
+  final DateTime? lastMessageAt;
+  final bool isUnread;
+
+  ConversationSummary({
+    required this.id,
+    required this.peerId,
+    required this.peerName,
+    required this.peerAvatar,
+    required this.lastMessage,
+    required this.lastMessageAt,
+    required this.isUnread,
+  });
+}
 
 class MessagesPage extends StatefulWidget {
   const MessagesPage({super.key});
@@ -12,50 +36,72 @@ class MessagesPage extends StatefulWidget {
 }
 
 class _MessagesPageState extends State<MessagesPage> {
-  String _searchQuery = "";
-  
-  final List<Map<String, dynamic>> _allMessages = [
-    {
-      'name': 'Sarah Jenkins',
-      'message': 'I saw your profile and thought...',
-      'time': '2m ago',
-      'imageUrl': 'https://i.pravatar.cc/150?u=sarah',
-      'isUnread': true,
-      'isOnline': true,
-    },
-    {
-      'name': 'David Chen',
-      'message': 'Thanks for the advice on the...',
-      'time': '1h ago',
-      'imageUrl': 'https://i.pravatar.cc/150?u=david',
-      'isOnline': true,
-    },
-    {
-      'name': 'CareerPath Team',
-      'message': 'Welcome to the premium...',
-      'time': 'Yesterday',
-      'leading': Icon(Icons.shield, color: Colors.white, size: 24.sp),
-    },
-    {
-      'name': 'Marcus Thompson',
-      'message': 'The workshop next Tuesday is...',
-      'time': 'Tuesday',
-      'imageUrl': 'https://i.pravatar.cc/150?u=marcus',
-    },
-    {
-      'name': 'Elena Rodriguez',
-      'message': 'Can we reschedule our sync?',
-      'time': 'Oct 24',
-      'imageUrl': 'https://i.pravatar.cc/150?u=elena',
-    },
-  ];
+  String _searchQuery = '';
+  bool _loading = true;
+  String? _error;
+  String _currentUserId = '';
+  List<ConversationSummary> _conversations = [];
 
-  List<Map<String, dynamic>> get _filteredMessages {
-    if (_searchQuery.isEmpty) return _allMessages;
-    return _allMessages
-        .where((m) => m['name'].toString().toLowerCase().contains(_searchQuery.toLowerCase()))
-        .toList();
+  @override
+  void initState() {
+    super.initState();
+    _loadConversations();
   }
+
+  Future<void> _loadConversations() async {
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      _currentUserId = (await sl<ApiService>().getCurrentUserId()) ?? '';
+      final response = await sl<ApiService>().getConversations();
+      final data = response.data;
+      final map = data is Map ? Map<String, dynamic>.from(data) : const <String, dynamic>{};
+      final rawList = (map['data'] as List<dynamic>?) ?? [];
+      final parsed = rawList.whereType<Map>().map((json) {
+        final convo = Map<String, dynamic>.from(json);
+        final participants = (convo['participants'] as List<dynamic>? ?? [])
+            .whereType<Map>()
+            .map((p) => Map<String, dynamic>.from(p))
+            .toList();
+        final peer = participants.firstWhere(
+          (p) => (p['_id'] ?? p['id']).toString() != _currentUserId,
+          orElse: () => participants.isNotEmpty ? participants.first : const <String, dynamic>{},
+        );
+        final profile = peer['profile'] as Map<String, dynamic>?;
+        final peerName = [profile?['firstName'], profile?['lastName']]
+            .whereType<String>()
+            .where((s) => s.isNotEmpty)
+            .join(' ');
+        final peerAvatar = MediaUrlHelper.resolve(profile?['avatar'] as String?);
+        final lastMessage = convo['lastMessage'] as Map<String, dynamic>?;
+        final lastMessageAtRaw = lastMessage?['createdAt'] ?? convo['lastMessageAt'];
+        DateTime? lastMessageAt;
+        if (lastMessageAtRaw is String) {
+          lastMessageAt = DateTime.tryParse(lastMessageAtRaw);
+        }
+        return ConversationSummary(
+          id: (convo['_id'] ?? convo['id']).toString(),
+          peerId: (peer['_id'] ?? peer['id']).toString(),
+          peerName: peerName.isNotEmpty ? peerName : (peer['name'] as String? ?? 'Unknown'),
+          peerAvatar: peerAvatar,
+          lastMessage: lastMessage?['content'] as String? ?? '',
+          lastMessageAt: lastMessageAt,
+          isUnread: false,
+        );
+      }).toList();
+      setState(() => _conversations = parsed);
+    } catch (e) {
+      setState(() => _error = 'Failed to load conversations');
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  List<ConversationSummary> get _filtered => _searchQuery.isEmpty
+      ? _conversations
+      : _conversations.where((c) => c.peerName.toLowerCase().contains(_searchQuery.toLowerCase())).toList();
 
   @override
   Widget build(BuildContext context) {
@@ -94,7 +140,6 @@ class _MessagesPageState extends State<MessagesPage> {
       ),
       body: Column(
         children: [
-          // Functional Search Bar
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
             child: Container(
@@ -107,10 +152,7 @@ class _MessagesPageState extends State<MessagesPage> {
                 onChanged: (value) => setState(() => _searchQuery = value),
                 decoration: InputDecoration(
                   hintText: 'Search messages...',
-                  hintStyle: TextStyle(
-                    color: AppColors.textHint,
-                    fontSize: 14.sp,
-                  ),
+                  hintStyle: TextStyle(color: AppColors.textHint, fontSize: 14.sp),
                   prefixIcon: Icon(Icons.search, color: AppColors.textHint, size: 22.sp),
                   border: InputBorder.none,
                   contentPadding: EdgeInsets.symmetric(vertical: 14.h),
@@ -118,43 +160,83 @@ class _MessagesPageState extends State<MessagesPage> {
               ),
             ),
           ),
-          
-          // Messages List
           Expanded(
-            child: ListView.builder(
-              itemCount: _filteredMessages.length,
-              itemBuilder: (context, index) {
-                final msg = _filteredMessages[index];
-                return MessageListTile(
-                  name: msg['name'],
-                  message: msg['message'],
-                  time: msg['time'],
-                  imageUrl: msg['imageUrl'],
-                  leading: msg['leading'],
-                  isUnread: msg['isUnread'] ?? false,
-                  isOnline: msg['isOnline'] ?? false,
-                  onTap: () => Navigator.pushNamed(
-                    context, 
-                    AppRouter.chat, 
-                    arguments: msg['name'], // Passes the dynamic name
-                  ),
-                  onProfileTap: () => Navigator.pushNamed(
-                    context, 
-                    AppRouter.profile, 
-                    arguments: msg['name'], // Correctly redirects to public profile
-                  ),
-                );
-              },
-            ),
+            child: _loading
+                ? const Center(child: CircularProgressIndicator())
+                : _error != null
+                    ? Center(
+                        child: Text(
+                          _error!,
+                          style: TextStyle(color: AppColors.textSecondary, fontSize: 14.sp),
+                          textAlign: TextAlign.center,
+                        ),
+                      )
+                    : _filtered.isEmpty
+                        ? Center(
+                            child: Text(
+                              'No conversations yet',
+                              style: TextStyle(color: AppColors.textSecondary, fontSize: 14.sp),
+                            ),
+                          )
+                        : RefreshIndicator(
+                            onRefresh: _loadConversations,
+                            child: ListView.builder(
+                              itemCount: _filtered.length,
+                              itemBuilder: (context, index) {
+                                final convo = _filtered[index];
+                                return MessageListTile(
+                                  name: convo.peerName,
+                                  message: convo.lastMessage,
+                                  time: _formatTime(convo.lastMessageAt),
+                                  imageUrl: convo.peerAvatar,
+                                  isUnread: convo.isUnread,
+                                  isOnline: false,
+                                  onTap: () => Navigator.pushNamed(
+                                    context,
+                                    AppRouter.chat,
+                                    arguments: {
+                                      'conversationId': convo.id,
+                                      'name': convo.peerName,
+                                      'avatar': convo.peerAvatar,
+                                    },
+                                  ),
+                                  onProfileTap: () => Navigator.pushNamed(
+                                    context,
+                                    AppRouter.profile,
+                                    arguments: convo.peerName,
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
           ),
+          if (_filtered.isNotEmpty) ...[
+            SizedBox(height: 8.h),
+            TextButton(
+              onPressed: () => UIUtils.showSnackBar(
+                context: context,
+                message: 'Compose is coming soon',
+                isError: false,
+              ),
+              child: Text(
+                'New message',
+                style: TextStyle(color: AppColors.primaryDark, fontSize: 12.sp, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        backgroundColor: AppColors.accentCyan,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30.r)),
-        child: Icon(Icons.edit_square, color: Colors.white, size: 28.sp),
-      ),
     );
+  }
+
+  String _formatTime(DateTime? dt) {
+    if (dt == null) return '';
+    final now = DateTime.now();
+    final diff = now.difference(dt);
+    if (diff.inMinutes < 1) return 'Just now';
+    if (diff.inMinutes < 60) return '${diff.inMinutes}m';
+    if (diff.inHours < 24) return '${diff.inHours}h';
+    if (diff.inDays < 7) return '${diff.inDays}d';
+    return '${dt.month}/${dt.day}';
   }
 }

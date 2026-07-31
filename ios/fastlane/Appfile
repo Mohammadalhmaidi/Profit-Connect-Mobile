@@ -1,0 +1,10 @@
+app_identifier("com.profitconnect.mobile")
+apple_id("developer@profitconnect.app")
+team_id("YOUR_TEAM_ID")
+
+for_new_platform(true)
+
+lane_context do |lane|
+  lane_context[SharedValues::VERSION_NUMBER] = ENV["VERSION_NAME"]
+  lane_context[SharedValues::BUILD_NUMBER] = ENV["BUILD_NUMBER"]
+end

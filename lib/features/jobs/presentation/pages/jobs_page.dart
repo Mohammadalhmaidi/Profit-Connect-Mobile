@@ -18,6 +18,28 @@ class JobsPage extends StatefulWidget {
 
 class _JobsPageState extends State<JobsPage> {
   String _selectedFilter = 'All';
+  final TextEditingController _searchController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    context.read<JobsBloc>().add(const GetJobsEvent());
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _submitSearch(String query) {
+    final trimmed = query.trim();
+    Navigator.pushNamed(
+      context,
+      AppRouter.jobSearch,
+      arguments: trimmed,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -71,7 +93,7 @@ class _JobsPageState extends State<JobsPage> {
               final filteredJobs = _selectedFilter == 'All'
                   ? jobs
                   : _selectedFilter == 'Remote'
-                      ? jobs.where((j) => j.isRemote).toList()
+                      ? jobs.where((j) => j.workPlace == 'Remote').toList()
                       : jobs.where((j) => j.type == _selectedFilter).toList();
 
               return RefreshIndicator(
@@ -150,12 +172,16 @@ class _JobsPageState extends State<JobsPage> {
           final job = jobs[index];
           return FeaturedJobCard(
             title: job.title,
-            company: job.company,
+            company: job.companyName,
             location: job.location,
-            salary: job.salary,
-            logoUrl: job.logoUrl,
+            salary: '\$${job.salary.min.toInt()} - \$${job.salary.max.toInt()}',
+            logoUrl: job.companyLogo,
             isVibrant: index % 2 == 0,
-            onTap: () => Navigator.pushNamed(context, AppRouter.jobDetails),
+            onTap: () => Navigator.pushNamed(
+              context,
+              AppRouter.jobDetails,
+              arguments: job,
+            ),
           );
         },
       ),
@@ -169,11 +195,15 @@ class _JobsPageState extends State<JobsPage> {
         children: jobs.map((job) {
           return RecommendedJobTile(
             title: job.title,
-            company: job.company,
+            company: job.companyName,
             location: job.location,
-            logoUrl: job.logoUrl,
-            tags: [job.type, if (job.isRemote) 'Remote'],
-            onTap: () => Navigator.pushNamed(context, AppRouter.jobDetails),
+            logoUrl: job.companyLogo,
+            tags: [job.type, if (job.workPlace == 'Remote') 'Remote'],
+            onTap: () => Navigator.pushNamed(
+              context,
+              AppRouter.jobDetails,
+              arguments: job,
+            ),
           );
         }).toList(),
       ),
@@ -187,6 +217,9 @@ class _JobsPageState extends State<JobsPage> {
       child: Container(
         decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12.r), border: Border.all(color: Colors.grey.shade200)),
         child: TextField(
+          controller: _searchController,
+          textInputAction: TextInputAction.search,
+          onSubmitted: _submitSearch,
           decoration: InputDecoration(
             hintText: 'Search titles, companies...',
             hintStyle: TextStyle(color: AppColors.textHint, fontSize: 14.sp),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../core/theme/app_colors.dart';
 
 class FeaturedJobCard extends StatefulWidget {
@@ -68,7 +69,12 @@ class _FeaturedJobCardState extends State<FeaturedJobCard> {
                       ),
                       child: Padding(
                         padding: EdgeInsets.all(8.w),
-                        child: Image.network(widget.logoUrl, fit: BoxFit.contain),
+                        child: CachedNetworkImage(
+                          imageUrl: widget.logoUrl,
+                          fit: BoxFit.contain,
+                          placeholder: (context, url) => const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                          errorWidget: (context, url, error) => const Icon(Icons.business, color: Colors.grey),
+                        ),
                       ),
                     ),
                   ),

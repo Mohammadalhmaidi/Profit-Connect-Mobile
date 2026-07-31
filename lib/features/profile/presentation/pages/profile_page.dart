@@ -7,6 +7,11 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../core/di/dependency_injection.dart';
 import '../../../../core/routes/app_router.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/ui_utils.dart';
+import '../../../../core/utils/media_url_helper.dart';
+import '../../../../api_service.dart';
+import '../../../auth/domain/entities/user_entity.dart';
+import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/domain/repositories/auth_repository.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -19,57 +24,99 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   bool _isEditing = false;
-  
-  // Controllers for editing
-  late TextEditingController _nameController;
-  late TextEditingController _bioController;
-  late TextEditingController _titleController;
-  
-  String _currentName = 'Mohammad Al-Hmaidi';
-  String _currentBio = 'Passionate Software Engineer focused on building high-quality mobile experiences with Flutter and BLoC.';
-  String _currentTitle = 'Senior Flutter Developer';
-  List<String> _skills = ['Flutter', 'Dart', 'Firebase', 'Clean Architecture', 'BLoC'];
+  bool _isSaving = false;
 
-  @override
-  void initState() {
-    super.initState();
-    _nameController = TextEditingController(text: _currentName);
-    _bioController = TextEditingController(text: _currentBio);
-    _titleController = TextEditingController(text: _currentTitle);
-  }
+  TextEditingController? _nameController;
+  TextEditingController? _bioController;
+  TextEditingController? _titleController;
 
   @override
   void dispose() {
-    _nameController.dispose();
-    _bioController.dispose();
-    _titleController.dispose();
+    _nameController?.dispose();
+    _bioController?.dispose();
+    _titleController?.dispose();
     super.dispose();
   }
 
+  UserEntity? _currentUser(BuildContext context) {
+    final state = context.select((AuthBloc b) => b.state);
+    return state is AuthSuccess ? state.user : null;
+  }
+
+  String _displayName(UserEntity? user) =>
+      user?.fullName?.isNotEmpty == true ? user.fullName : 'Guest User';
+  String _displayTitle(UserEntity? user) =>
+      user?.headline?.isNotEmpty == true ? user.headline : 'Add a professional title';
+  String _displayBio(UserEntity? user) =>
+      user?.bio?.isNotEmpty == true
+          ? user.bio
+          : 'No bio yet. Tap "Edit profile" to add one.';
+  List<String> _displaySkills(UserEntity? user) {
+    final skills = user?.skills?.whereType<String>().where((s) => s.isNotEmpty).toList() ?? [];
+    return skills;
+  }
+
   void _toggleEdit() {
+    final user = _currentUser(context);
     if (_isEditing) {
-      // Save logic
-      setState(() {
-        _currentName = _nameController.text;
-        _currentBio = _bioController.text;
-        _currentTitle = _titleController.text;
-        _isEditing = false;
-      });
-      HapticFeedback.mediumImpact();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Profile updated successfully!'), backgroundColor: AppColors.successGreen),
-      );
+      _saveProfile(user);
     } else {
       setState(() {
         _isEditing = true;
+        _nameController = TextEditingController(text: user?.fullName ?? '');
+        _titleController = TextEditingController(text: user?.headline ?? '');
+        _bioController = TextEditingController(text: user?.bio ?? '');
       });
-      HapticFeedback.lightImpact();
+    }
+  }
+
+  Future<void> _saveProfile(UserEntity? user) async {
+    final name = _nameController?.text.trim() ?? '';
+    final title = _titleController?.text.trim() ?? '';
+    final bio = _bioController?.text.trim() ?? '';
+    final parts = name.split(' ');
+    final firstName = parts.isNotEmpty ? parts.first : '';
+    final lastName = parts.length > 1 ? parts.sublist(1).join(' ') : '';
+
+    setState(() => _isSaving = true);
+    try {
+      await sl<ApiService>().updateProfile({
+        if (firstName.isNotEmpty) 'firstName': firstName,
+        if (lastName.isNotEmpty) 'lastName': lastName,
+        if (title.isNotEmpty) 'headline': title,
+        if (bio.isNotEmpty) 'bio': bio,
+        'skills': user?.skills ?? [],
+      });
+      if (!mounted) return;
+      setState(() {
+        _isEditing = false;
+        _isSaving = false;
+      });
+      UIUtils.showSnackBar(
+        context: context,
+        message: 'Profile updated successfully!',
+        isError: false,
+      );
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isSaving = false);
+      UIUtils.showSnackBar(
+        context: context,
+        message: 'Failed to update profile: $e',
+        isError: true,
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    bool isOwnProfile = widget.userName == null;
+    final user = _currentUser(context);
+    final isOwnProfile = widget.userName == null;
+    final displayName = _displayName(user);
+    final displayTitle = _displayTitle(user);
+    final displayBio = _displayBio(user);
+    final displaySkills = _displaySkills(user);
+    final avatarUrl = user?.avatar ?? '';
 
     return Scaffold(
       backgroundColor: AppColors.backgroundAlt,
@@ -79,13 +126,13 @@ class _ProfilePageState extends State<ProfilePage> {
           physics: const BouncingScrollPhysics(),
           child: Column(
             children: [
-              _buildHeader(),
+              _buildHeader(user, displayName, displayTitle, avatarUrl, isOwnProfile),
               SizedBox(height: 24.h),
               if (!_isEditing) const _StatsRow(),
               SizedBox(height: 32.h),
-              _buildAboutSection(),
+              _buildAboutSection(displayBio),
               SizedBox(height: 32.h),
-              _buildSkillsSection(),
+              _buildSkillsSection(displaySkills, isOwnProfile),
               SizedBox(height: 32.h),
               if (!isOwnProfile) _buildActionButtons(),
               if (isOwnProfile && !_isEditing) const _ExperienceSection(),
@@ -125,7 +172,13 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(
+    UserEntity? user,
+    String displayName,
+    String displayTitle,
+    String avatarUrl,
+    bool isOwnProfile,
+  ) {
     return Container(
       width: double.infinity,
       color: Colors.white,
@@ -135,9 +188,12 @@ class _ProfilePageState extends State<ProfilePage> {
           CircleAvatar(
             radius: 60.r,
             backgroundColor: AppColors.chipUnselected,
-            backgroundImage: const CachedNetworkImageProvider(
-              'https://i.pravatar.cc/300?u=mohammad',
-            ),
+            backgroundImage: avatarUrl.isNotEmpty
+                ? CachedNetworkImageProvider(MediaUrlHelper.resolve(avatarUrl))
+                : null,
+            child: avatarUrl.isEmpty
+                ? Icon(Icons.person, color: AppColors.primaryDark, size: 48.sp)
+                : null,
           ),
           SizedBox(height: 16.h),
           if (_isEditing)
@@ -164,7 +220,7 @@ class _ProfilePageState extends State<ProfilePage> {
             Column(
               children: [
                 Text(
-                  _currentName,
+                  displayName,
                   style: TextStyle(
                     color: AppColors.textPrimary,
                     fontSize: 24.sp,
@@ -173,7 +229,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
                 SizedBox(height: 4.h),
                 Text(
-                  _currentTitle,
+                  displayTitle,
                   style: TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 16.sp,
@@ -187,7 +243,7 @@ class _ProfilePageState extends State<ProfilePage> {
     ).animate().fadeIn(duration: 600.ms);
   }
 
-  Widget _buildAboutSection() {
+  Widget _buildAboutSection(String bio) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 24.w),
       child: Column(
@@ -207,7 +263,7 @@ class _ProfilePageState extends State<ProfilePage> {
             )
           else
             Text(
-              _currentBio,
+              bio,
               style: TextStyle(
                 color: AppColors.textSecondary,
                 fontSize: 15.sp,
@@ -219,7 +275,7 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget _buildSkillsSection() {
+  Widget _buildSkillsSection(List<String> skills, bool isOwnProfile) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 24.w),
       child: Column(
@@ -230,9 +286,9 @@ class _ProfilePageState extends State<ProfilePage> {
           Wrap(
             spacing: 10.w,
             runSpacing: 12.h,
-            children: _skills.map((skill) => _ProfileSkillChip(label: skill)).toList(),
+            children: skills.map((skill) => _ProfileSkillChip(label: skill)).toList(),
           ),
-          if (_isEditing)
+          if (isOwnProfile && _isEditing)
             Padding(
               padding: EdgeInsets.only(top: 12.h),
               child: TextButton.icon(

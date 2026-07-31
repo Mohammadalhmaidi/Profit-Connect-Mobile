@@ -8,11 +8,13 @@ abstract class JobsEvent extends Equatable {
 }
 
 class GetJobsEvent extends JobsEvent {
+  final String? search;
   final String? type;
   final String? workPlace;
+  final String? workLevel;
 
-  const GetJobsEvent({this.type, this.workPlace});
+  const GetJobsEvent({this.search, this.type, this.workPlace, this.workLevel});
 
   @override
-  List<Object?> get props => [type, workPlace];
+  List<Object?> get props => [search, type, workPlace, workLevel];
 }

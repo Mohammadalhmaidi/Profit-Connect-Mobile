@@ -1,39 +1,52 @@
-import 'package:equatable/equatable.dart';
+import '../../domain/entities/job_entity.dart';
 
-class JobModel extends Equatable {
-  final String id;
-  final String title;
-  final String company;
-  final String location;
-  final String salary;
-  final String logoUrl;
-  final String type;
-  final bool isRemote;
-
+class JobModel extends JobEntity {
   const JobModel({
-    required this.id,
-    required this.title,
-    required this.company,
-    required this.location,
-    required this.salary,
-    required this.logoUrl,
-    required this.type,
-    required this.isRemote,
+    required super.id,
+    required super.title,
+    super.description,
+    required super.companyId,
+    super.companyName,
+    super.companyLogo,
+    super.location,
+    super.salary,
+    super.type,
+    super.workLevel,
+    super.workPlace,
+    super.requirements,
+    super.responsibilities,
+    super.status,
+    super.postedById,
   });
 
   factory JobModel.fromJson(Map<String, dynamic> json) {
+    final company = json['company'] as Map<String, dynamic>?;
+    final salaryJson = json['salary'] as Map<String, dynamic>?;
+
     return JobModel(
-      id: (json['_id'] ?? json['id'] ?? '').toString(),
+      id: (json['_id'] ?? json['id']).toString(),
       title: json['title'] ?? '',
-      company: json['company'] ?? '',
+      description: json['description'] ?? '',
+      companyId: company?['_id']?.toString() ?? json['companyId']?.toString() ?? '',
+      companyName: company?['name'] ?? json['companyName'] ?? '',
+      companyLogo: company?['logo'] ?? json['companyLogo'] ?? '',
       location: json['location'] ?? '',
-      salary: json['salary'] ?? '',
-      logoUrl: json['logoUrl'] ?? 'https://i.pravatar.cc/150?u=job',
+      salary: SalaryRange(
+        min: (salaryJson?['min'] ?? 0).toDouble(),
+        max: (salaryJson?['max'] ?? 0).toDouble(),
+        currency: salaryJson?['currency'] ?? 'USD',
+      ),
       type: json['type'] ?? 'Full-time',
-      isRemote: json['isRemote'] ?? false,
+      workLevel: json['workLevel'] ?? 'Entry',
+      workPlace: json['workPlace'] ?? 'On-site',
+      requirements: (json['requirements'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ?? [],
+      responsibilities: (json['responsibilities'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ?? [],
+      status: json['status'] ?? 'Open',
+      postedById: json['postedBy']?.toString() ?? '',
     );
   }
-
-  @override
-  List<Object?> get props => [id, title, company, location, salary, logoUrl, type, isRemote];
 }

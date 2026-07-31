@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../core/theme/app_colors.dart';
 
 class ChatBubble extends StatelessWidget {
@@ -38,7 +39,7 @@ class ChatBubble extends StatelessWidget {
             if (isLastInGroup && avatarUrl != null)
               CircleAvatar(
                 radius: 16.r,
-                backgroundImage: NetworkImage(avatarUrl!),
+                backgroundImage: CachedNetworkImageProvider(avatarUrl!),
               )
             else
               SizedBox(width: 32.w),

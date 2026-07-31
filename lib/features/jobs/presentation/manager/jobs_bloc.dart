@@ -1,6 +1,6 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
+import '../../../../core/utils/app_logger.dart';
 import '../../domain/entities/job_entity.dart';
 import '../../domain/usecases/get_jobs_usecase.dart';
 
@@ -18,21 +18,19 @@ class JobsBloc extends Bloc<JobsEvent, JobsState> {
     emit(JobsLoading());
     
     final result = await getJobsUseCase(
+      search: event.search,
       type: event.type,
       workPlace: event.workPlace,
+      workLevel: event.workLevel,
     );
 
     result.fold(
       (failure) {
-        debugPrint('❌ JobsBloc Error: ${failure.message}');
+        AppLogger.e('JobsBloc Error: ${failure.message}');
         emit(JobsError(failure.message));
       },
       (jobs) {
-        // Debug binding: Print received entities count and first item if available
-        debugPrint('✅ JobsBloc Success: Received ${jobs.length} jobs');
-        if (jobs.isNotEmpty) {
-          debugPrint('First Job Sample: ${jobs.first.title} at ${jobs.first.company}');
-        }
+        AppLogger.s('JobsBloc Success: Received ${jobs.length} jobs');
         emit(JobsLoaded(jobs));
       },
     );

@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/presentation/manager/theme_bloc.dart';
 import '../../../../core/presentation/manager/app_settings_cubit.dart';
+import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../widgets/settings_tile.dart';
 
 class SettingsPage extends StatelessWidget {
@@ -10,183 +12,161 @@ class SettingsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<AppSettingsCubit, AppSettingsState>(
-      builder: (context, state) {
-        final isArabic = state.locale.languageCode == 'ar';
-        
-        return Scaffold(
-          backgroundColor: AppColors.backgroundAlt,
-          appBar: AppBar(
-            backgroundColor: Colors.white,
-            elevation: 0,
-            leading: IconButton(
-              icon: Icon(
-                isArabic ? Icons.arrow_back_ios_new : Icons.arrow_back_ios, 
-                color: Colors.black
-              ),
-              onPressed: () => Navigator.pop(context),
-            ),
-            title: Text(
-              isArabic ? 'الإعدادات' : 'Settings',
-              style: TextStyle(
-                color: Colors.black,
-                fontSize: 20.sp,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            centerTitle: true,
+    return Scaffold(
+      backgroundColor: AppColors.backgroundAlt,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text(
+          'Settings',
+          style: TextStyle(
+            color: AppColors.textPrimary,
+            fontSize: 18.sp,
+            fontWeight: FontWeight.bold,
           ),
-          body: SingleChildScrollView(
+        ),
+        centerTitle: true,
+      ),
+      body: ListView(
+        padding: EdgeInsets.all(24.w),
+        children: [
+          Text(
+            'APPEARANCE',
+            style: TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 12.sp,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1.2,
+            ),
+          ),
+          SizedBox(height: 12.h),
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16.r),
+            ),
             child: Column(
               children: [
-                // Profile Header
-                Container(
-                  width: double.infinity,
-                  padding: EdgeInsets.all(16.w),
-                  margin: EdgeInsets.all(16.w),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16.r),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
+                BlocBuilder<ThemeBloc, ThemeState>(
+                  builder: (context, themeState) {
+                    final isDark = themeState.themeMode == ThemeMode.dark;
+                    return SettingsTile(
+                      icon: isDark ? Icons.dark_mode : Icons.light_mode,
+                      title: 'Dark Mode',
+                      trailing: Switch.adaptive(
+                        value: isDark,
+                        onChanged: (_) {
+                          context.read<ThemeBloc>().toggleTheme();
+                        },
+                        activeColor: AppColors.vibrantPurple,
                       ),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      CircleAvatar(
-                        radius: 35.r,
-                        backgroundImage: const NetworkImage('https://i.pravatar.cc/150?u=me'),
-                      ),
-                      SizedBox(width: 16.w),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              isArabic ? 'محمد الحميدي' : 'Mohammad Al-Hmaidi',
-                              style: TextStyle(
-                                color: AppColors.textPrimary,
-                                fontSize: 18.sp,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Text(
-                              'mohammad@careerpath.com',
-                              style: TextStyle(
-                                color: AppColors.textSecondary,
-                                fontSize: 14.sp,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
+                    );
+                  },
                 ),
-
-                _buildSectionHeader(isArabic ? 'الحساب والأمان' : 'ACCOUNT & SECURITY'),
-                _buildSectionCard([
-                  SettingsTile(
-                    icon: Icons.person_outline,
-                    title: isArabic ? 'المعلومات الشخصية' : 'Personal Information',
-                    subtitle: isArabic ? 'الاسم، البريد، والمهنة' : 'Name, email, and occupation',
-                  ),
-                  SettingsTile(
-                    icon: Icons.lock_outline,
-                    title: isArabic ? 'تسجيل الدخول والأمان' : 'Login & Security',
-                  ),
-                ]),
-
-                _buildSectionHeader(isArabic ? 'تفضيلات التطبيق' : 'APP PREFERENCES'),
-                _buildSectionCard([
-                  SettingsTile(
-                    icon: Icons.dark_mode_outlined,
-                    title: isArabic ? 'الوضع الليلي' : 'Dark Mode',
-                    trailing: Switch.adaptive(
-                      value: state.themeMode == ThemeMode.dark,
-                      onChanged: (val) => context.read<AppSettingsCubit>().toggleTheme(),
-                      activeColor: AppColors.primaryDark,
-                    ),
-                  ),
-                  SettingsTile(
-                    icon: Icons.language_outlined,
-                    title: isArabic ? 'اللغة' : 'Language',
-                    subtitle: isArabic ? 'العربية' : 'English',
-                    trailing: TextButton(
-                      onPressed: () {
-                        final newLang = isArabic ? 'en' : 'ar';
+                BlocBuilder<AppSettingsCubit, AppSettingsState>(
+                  builder: (context, state) {
+                    return SettingsTile(
+                      icon: Icons.language,
+                      title: 'Language',
+                      subtitle: state.locale.languageCode == 'ar' ? 'العربية' : 'English',
+                      onTap: () {
+                        final newLang = state.locale.languageCode == 'en' ? 'ar' : 'en';
                         context.read<AppSettingsCubit>().setLocale(newLang);
                       },
-                      child: Text(isArabic ? 'English' : 'العربية'),
-                    ),
-                  ),
-                ]),
-
-                // Logout Button
-                Padding(
-                  padding: EdgeInsets.all(24.w),
-                  child: SizedBox(
-                    width: double.infinity,
-                    height: 56.h,
-                    child: ElevatedButton(
-                      onPressed: () => Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.logoutRed,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16.r),
-                        ),
-                        elevation: 0,
-                      ),
-                      child: Text(
-                        isArabic ? 'تسجيل الخروج' : 'Log Out',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18.sp,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
+                    );
+                  },
                 ),
               ],
             ),
           ),
-        );
-      },
-    );
-  }
-
-  Widget _buildSectionHeader(String title) {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.h),
-      child: Align(
-        alignment: AlignmentDirectional.centerStart,
-        child: Text(
-          title,
-          style: TextStyle(
-            color: AppColors.textSecondary,
-            fontSize: 12.sp,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 1.2,
+          SizedBox(height: 24.h),
+          Text(
+            'ACCOUNT',
+            style: TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 12.sp,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1.2,
+            ),
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSectionCard(List<Widget> tiles) {
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 16.w),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16.r),
-      ),
-      child: Column(
-        children: tiles,
+          SizedBox(height: 12.h),
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16.r),
+            ),
+            child: const Column(
+              children: [
+                SettingsTile(
+                  icon: Icons.person_outline,
+                  title: 'Edit Profile',
+                ),
+                SettingsTile(
+                  icon: Icons.notifications_outlined,
+                  title: 'Notifications',
+                ),
+                SettingsTile(
+                  icon: Icons.lock_outline,
+                  title: 'Privacy',
+                ),
+              ],
+            ),
+          ),
+          SizedBox(height: 24.h),
+          Text(
+            'SUPPORT',
+            style: TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 12.sp,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1.2,
+            ),
+          ),
+          SizedBox(height: 12.h),
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16.r),
+            ),
+            child: const Column(
+              children: [
+                SettingsTile(
+                  icon: Icons.help_outline,
+                  title: 'Help Center',
+                ),
+                SettingsTile(
+                  icon: Icons.info_outline,
+                  title: 'About',
+                ),
+              ],
+            ),
+          ),
+          SizedBox(height: 40.h),
+          Center(
+            child: TextButton(
+              onPressed: () {
+                context.read<AuthBloc>().add(LogoutRequested());
+                Navigator.pushNamedAndRemoveUntil(
+                  context,
+                  '/login',
+                  (route) => false,
+                );
+              },
+              child: Text(
+                'Log Out',
+                style: TextStyle(
+                  color: AppColors.logoutRed,
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

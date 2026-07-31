@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/di/dependency_injection.dart';
 import '../../../feed/presentation/pages/home_page.dart';
 import '../../../network/presentation/pages/network_page.dart';
 import '../../../jobs/presentation/pages/jobs_page.dart';
 import '../../../messages/presentation/pages/messages_page.dart';
 import '../../../profile/presentation/pages/profile_page.dart';
 import '../../../feed/presentation/pages/create_post_sheet.dart';
+import '../../../feed/presentation/manager/create_post_cubit.dart';
 import '../manager/navigation_cubit.dart';
 import '../widgets/app_sidebar.dart';
 
@@ -19,46 +21,24 @@ class MainLayoutPage extends StatefulWidget {
 }
 
 class _MainLayoutPageState extends State<MainLayoutPage> {
-  late PageController _pageController;
-
-  @override
-  void initState() {
-    super.initState();
-    _pageController = PageController();
-  }
-
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
-    final List<Widget> pages = [
-      const HomePage(),
-      const NetworkPage(),
-      const SizedBox(), // Placeholder for the '+' button (FAB)
-      const JobsPage(),
-      const MessagesPage(), // Restored Messages Tab
-      const ProfilePage(),
-    ];
-
     return BlocProvider(
       create: (context) => NavigationCubit(),
-      child: BlocConsumer<NavigationCubit, int>(
-        listener: (context, index) {
-          if (index != 2) { // Don't jump for the FAB placeholder
-             _pageController.jumpToPage(index);
-          }
-        },
+      child: BlocBuilder<NavigationCubit, int>(
         builder: (context, currentIndex) {
           return Scaffold(
             drawer: const AppSidebar(),
-            body: PageView(
-              controller: _pageController,
-              physics: const NeverScrollableScrollPhysics(),
-              children: pages,
+            body: IndexedStack(
+              index: currentIndex,
+              children: const [
+                HomePage(),
+                NetworkPage(),
+                SizedBox(), // Placeholder for the '+' button (FAB)
+                JobsPage(),
+                MessagesPage(),
+                ProfilePage(),
+              ],
             ),
             bottomNavigationBar: _buildBottomBar(context, currentIndex),
             floatingActionButton: FloatingActionButton(
@@ -127,7 +107,10 @@ class _MainLayoutPageState extends State<MainLayoutPage> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => const CreatePostSheet(),
+      builder: (context) => BlocProvider(
+        create: (_) => sl<CreatePostCubit>(),
+        child: const CreatePostSheet(),
+      ),
     );
   }
 }

@@ -5,9 +5,11 @@ import '../../../../core/theme/app_colors.dart';
 class CustomTextField extends StatelessWidget {
   final String label;
   final String hintText;
-  final IconData? suffixIcon;
+  final Widget? suffixIcon;
   final bool isPassword;
   final TextEditingController? controller;
+  final TextInputType? keyboardType;
+  final String? Function(String?)? validator;
 
   const CustomTextField({
     super.key,
@@ -16,6 +18,8 @@ class CustomTextField extends StatelessWidget {
     this.suffixIcon,
     this.isPassword = false,
     this.controller,
+    this.keyboardType,
+    this.validator,
   });
 
   @override
@@ -35,6 +39,8 @@ class CustomTextField extends StatelessWidget {
         TextFormField(
           controller: controller,
           obscureText: isPassword,
+          keyboardType: keyboardType,
+          validator: validator,
           style: TextStyle(
             fontSize: 16.sp,
             color: AppColors.textPrimary,
@@ -45,13 +51,7 @@ class CustomTextField extends StatelessWidget {
               color: AppColors.textHint,
               fontSize: 16.sp,
             ),
-            suffixIcon: suffixIcon != null
-                ? Icon(
-                    suffixIcon,
-                    color: AppColors.textSecondary,
-                    size: 20.sp,
-                  )
-                : null,
+            suffixIcon: suffixIcon,
             contentPadding: EdgeInsets.symmetric(
               horizontal: 16.w,
               vertical: 18.h,

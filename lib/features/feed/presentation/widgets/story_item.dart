@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../core/theme/app_colors.dart';
 
 class StoryItem extends StatelessWidget {
@@ -34,7 +35,7 @@ class StoryItem extends StatelessWidget {
                 ),
                 child: CircleAvatar(
                   backgroundColor: AppColors.chipUnselected,
-                  backgroundImage: imageUrl != null ? NetworkImage(imageUrl!) : null,
+                  backgroundImage: imageUrl != null ? CachedNetworkImageProvider(imageUrl!) : null,
                   child: isYourStory && imageUrl == null
                       ? Icon(Icons.add, color: AppColors.primaryDark, size: 24.sp)
                       : null,

@@ -13,6 +13,7 @@ class AuthLoading extends AuthState {}
 
 class AuthSuccess extends AuthState {
   final UserEntity user;
+
   const AuthSuccess(this.user);
 
   @override
@@ -20,9 +21,11 @@ class AuthSuccess extends AuthState {
 }
 
 class AuthFailure extends AuthState {
-  final String error;
-  const AuthFailure(this.error);
+  final String message;
+  final int? statusCode;
+
+  const AuthFailure(this.message, {this.statusCode});
 
   @override
-  List<Object?> get props => [error];
+  List<Object?> get props => [message, statusCode];
 }

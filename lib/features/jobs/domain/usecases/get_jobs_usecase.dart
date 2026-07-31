@@ -8,7 +8,17 @@ class GetJobsUseCase {
 
   GetJobsUseCase(this.repository);
 
-  Future<Either<Failure, List<JobEntity>>> call({String? type, String? workPlace}) async {
-    return await repository.getJobs(type: type, workPlace: workPlace);
+  Future<Either<Failure, List<JobEntity>>> call({
+    String? search,
+    String? type,
+    String? workPlace,
+    String? workLevel,
+  }) async {
+    return await repository.getJobs(
+      search: search,
+      type: type,
+      workPlace: workPlace,
+      workLevel: workLevel,
+    );
   }
 }

@@ -1,45 +1,38 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AppSettingsState extends Equatable {
-  final ThemeMode themeMode;
   final Locale locale;
 
-  const AppSettingsState({
-    required this.themeMode,
-    required this.locale,
-  });
+  const AppSettingsState({required this.locale});
 
   @override
-  List<Object> get props => [themeMode, locale];
+  List<Object> get props => [locale];
 
-  AppSettingsState copyWith({
-    ThemeMode? themeMode,
-    Locale? locale,
-  }) {
-    return AppSettingsState(
-      themeMode: themeMode ?? this.themeMode,
-      locale: locale ?? this.locale,
-    );
+  AppSettingsState copyWith({Locale? locale}) {
+    return AppSettingsState(locale: locale ?? this.locale);
   }
 }
 
 class AppSettingsCubit extends Cubit<AppSettingsState> {
-  AppSettingsCubit() : super(const AppSettingsState(
-    themeMode: ThemeMode.light,
-    locale: Locale('en'),
-  ));
+  final SharedPreferences sharedPreferences;
 
-  void toggleTheme() {
-    emit(state.copyWith(
-      themeMode: state.themeMode == ThemeMode.light ? ThemeMode.dark : ThemeMode.light,
-    ));
+  AppSettingsCubit({required this.sharedPreferences})
+      : super(AppSettingsState(locale: _loadLocale(sharedPreferences)));
+
+  static Locale _loadLocale(SharedPreferences prefs) {
+    final code = prefs.getString('locale_code');
+    if (code == 'ar' || code == 'en') {
+      return Locale(code);
+    }
+    return const Locale('en');
   }
 
   void setLocale(String languageCode) {
-    emit(state.copyWith(
-      locale: Locale(languageCode),
-    ));
+    if (languageCode != 'ar' && languageCode != 'en') return;
+    sharedPreferences.setString('locale_code', languageCode);
+    emit(state.copyWith(locale: Locale(languageCode)));
   }
 }

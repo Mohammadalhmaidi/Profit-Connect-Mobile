@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../core/theme/app_colors.dart';
 
 class PostImageAttachment extends StatelessWidget {
@@ -19,7 +20,7 @@ class PostImageAttachment extends StatelessWidget {
               color: AppColors.secondaryDark,
               borderRadius: BorderRadius.circular(16.r),
               image: const DecorationImage(
-                image: NetworkImage('https://placeholder.com/graph_image'), // Placeholder for the graph in image
+                image: CachedNetworkImageProvider('https://placeholder.com/graph_image'),
                 fit: BoxFit.cover,
               ),
             ),

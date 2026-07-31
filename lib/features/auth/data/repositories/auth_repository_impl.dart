@@ -1,6 +1,7 @@
 import 'package:dartz/dartz.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../../../core/error/failures.dart';
+import '../../../../core/error/api_call_helper.dart';
 import '../../../../core/network/network_info.dart';
 import '../../domain/entities/user_entity.dart';
 import '../../domain/repositories/auth_repository.dart';
@@ -24,19 +25,52 @@ class AuthRepositoryImpl implements AuthRepository {
     required String email,
     required String password,
   }) async {
-    if (!await networkInfo.isConnected) {
-      return const Left(ServerFailure('No internet connection'));
-    }
+    return safeApiCallWithNetworkCheck(
+      networkInfo: networkInfo,
+      call: () => remoteDataSource.login(email: email, password: password),
+    );
+  }
 
-    try {
-      final userModel = await remoteDataSource.login(
+  @override
+  Future<Either<Failure, UserEntity>> signup({
+    required String firstName,
+    required String lastName,
+    required String email,
+    required String password,
+    required String role,
+    List<String> skills = const [],
+    String? phoneNumber,
+    String? industry,
+    String? companyName,
+    String? companyDescription,
+    String? companyIndustry,
+    String? companyLocation,
+  }) async {
+    return safeApiCallWithNetworkCheck(
+      networkInfo: networkInfo,
+      call: () => remoteDataSource.signup(
+        firstName: firstName,
+        lastName: lastName,
         email: email,
         password: password,
-      );
-      return Right(userModel);
-    } catch (e) {
-      return Left(ServerFailure(e.toString()));
-    }
+        role: role,
+        skills: skills,
+        phoneNumber: phoneNumber,
+        industry: industry,
+        companyName: companyName,
+        companyDescription: companyDescription,
+        companyIndustry: companyIndustry,
+        companyLocation: companyLocation,
+      ),
+    );
+  }
+
+  @override
+  Future<Either<Failure, UserEntity>> getCurrentUser() async {
+    return safeApiCallWithNetworkCheck(
+      networkInfo: networkInfo,
+      call: () => remoteDataSource.getCurrentUser(),
+    );
   }
 
   @override

@@ -1,0 +1,11 @@
+json_key_file("fastlane/keys.json")
+package_name("com.profitconnect.mobile")
+
+for_new_platform(true)
+
+json_key_file("fastlane/keys.json")
+
+lane_context do |lane|
+  lane_context[SharedValues::VERSION_CODE] = ENV["VERSION_CODE"]
+  lane_context[SharedValues::VERSION_NAME] = ENV["VERSION_NAME"]
+end

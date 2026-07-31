@@ -1,13 +1,76 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:intl/intl.dart';
+import '../../../../core/di/dependency_injection.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../api_service.dart';
+import '../data/services/chat_rest_service.dart';
 import '../widgets/chat_bubble.dart';
 import '../widgets/chat_input_bar.dart';
 
-class ChatPage extends StatelessWidget {
+class ChatPage extends StatefulWidget {
+  final String conversationId;
   final String userName;
+  final String peerAvatar;
 
-  const ChatPage({super.key, this.userName = 'Sarah Jenkins'});
+  const ChatPage({
+    super.key,
+    required this.conversationId,
+    required this.userName,
+    this.peerAvatar = '',
+  });
+
+  @override
+  State<ChatPage> createState() => _ChatPageState();
+}
+
+class _ChatPageState extends State<ChatPage> {
+  late final ChatRestService _chatService;
+  String _currentUserId = '';
+  final List<ChatMessage> _messages = [];
+  bool _initialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _chatService = sl<ChatRestService>();
+    _init();
+  }
+
+  Future<void> _init() async {
+    _currentUserId = (await sl<ApiService>().getCurrentUserId()) ?? '';
+    _chatService.startPolling(
+      conversationId: widget.conversationId,
+      userId: _currentUserId,
+    );
+    _chatService.messages.listen((messages) {
+      if (!mounted) return;
+      setState(() {
+        _messages
+          ..clear()
+          ..addAll(messages);
+      });
+    });
+    _initialized = true;
+  }
+
+  @override
+  void dispose() {
+    _chatService.stopPolling();
+    super.dispose();
+  }
+
+  Future<void> _sendMessage(String content) async {
+    if (widget.conversationId.isEmpty) return;
+    try {
+      await _chatService.sendMessage(widget.conversationId, content);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to send message: $e'), backgroundColor: AppColors.error),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,14 +87,18 @@ class ChatPage extends StatelessWidget {
           children: [
             CircleAvatar(
               radius: 20.r,
-              backgroundImage: const NetworkImage('https://i.pravatar.cc/150?u=sarah'),
+              backgroundImage:
+                  widget.peerAvatar.isNotEmpty ? NetworkImage(widget.peerAvatar) : null,
+              child: widget.peerAvatar.isEmpty
+                  ? Icon(Icons.person, color: AppColors.primaryDark, size: 24.sp)
+                  : null,
             ),
             SizedBox(width: 12.w),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  userName,
+                  widget.userName,
                   style: TextStyle(
                     color: Colors.black,
                     fontSize: 16.sp,
@@ -66,68 +133,36 @@ class ChatPage extends StatelessWidget {
       body: Column(
         children: [
           Expanded(
-            child: ListView(
-              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 20.h),
-              children: [
-                _buildDateSeparator('MONDAY, OCT 24'),
-                const ChatBubble(
-                  message: 'Hi Alex! I saw your recent portfolio update on CareerPath. The fintech case study was impressive.',
-                  time: '10:42 AM',
-                ),
-                const ChatBubble(
-                  message: "Would you be open to a quick coffee chat? We're looking for a Design Lead at TechCorp.",
-                  time: '10:43 AM',
-                  isLastInGroup: true,
-                  avatarUrl: 'https://i.pravatar.cc/150?u=sarah',
-                ),
-                _buildDateSeparator('TODAY'),
-                const ChatBubble(
-                  isSender: true,
-                  message: "Absolutely, Sarah! I'd love to discuss the role and hear more about TechCorp's roadmap. Does Thursday afternoon work for you?",
-                  time: '2:15 PM',
-                  isLastInGroup: true,
-                ),
-                const ChatBubble(
-                  isSender: true,
-                  isFile: true,
-                  fileName: 'Alex_Resume_2024.pdf',
-                  fileSize: '1.2 MB • PDF',
-                  time: '2:16 PM',
-                  isLastInGroup: true,
-                ),
-                const ChatBubble(
-                  isTyping: true,
-                  time: '',
-                  isLastInGroup: true,
-                  avatarUrl: 'https://i.pravatar.cc/150?u=sarah',
-                ),
-              ],
-            ),
+            child: _messages.isEmpty
+                ? _buildEmptyState()
+                : ListView.builder(
+                    padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 20.h),
+                    reverse: true,
+                    itemCount: _messages.length,
+                    itemBuilder: (context, index) {
+                      final message = _messages[index];
+                      final isSender = message.senderId == _currentUserId;
+                      return ChatBubble(
+                        message: message.content,
+                        time: DateFormat.jm().format(message.createdAt),
+                        isSender: isSender,
+                        isLastInGroup: index == _messages.lastIndexWhere((m) => m.senderId == message.senderId),
+                        avatarUrl: isSender ? null : widget.peerAvatar,
+                      );
+                    },
+                  ),
           ),
-          const ChatInputBar(),
+          ChatInputBar(onSend: _sendMessage),
         ],
       ),
     );
   }
 
-  Widget _buildDateSeparator(String label) {
+  Widget _buildEmptyState() {
     return Center(
-      child: Container(
-        margin: EdgeInsets.symmetric(vertical: 20.h),
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
-        decoration: BoxDecoration(
-          color: AppColors.fieldBackground,
-          borderRadius: BorderRadius.circular(20.r),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: AppColors.textSecondary,
-            fontSize: 11.sp,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 0.5,
-          ),
-        ),
+      child: Text(
+        'No messages yet. Say hello!',
+        style: TextStyle(color: AppColors.textSecondary, fontSize: 14.sp),
       ),
     );
   }

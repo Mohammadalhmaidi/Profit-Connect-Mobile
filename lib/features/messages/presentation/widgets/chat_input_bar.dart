@@ -2,8 +2,30 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../core/theme/app_colors.dart';
 
-class ChatInputBar extends StatelessWidget {
-  const ChatInputBar({super.key});
+class ChatInputBar extends StatefulWidget {
+  final void Function(String content)? onSend;
+
+  const ChatInputBar({super.key, this.onSend});
+
+  @override
+  State<ChatInputBar> createState() => _ChatInputBarState();
+}
+
+class _ChatInputBarState extends State<ChatInputBar> {
+  final TextEditingController _controller = TextEditingController();
+
+  void _submit() {
+    final content = _controller.text.trim();
+    if (content.isEmpty) return;
+    _controller.clear();
+    widget.onSend?.call(content);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,6 +57,7 @@ class ChatInputBar extends StatelessWidget {
                 borderRadius: BorderRadius.circular(24.r),
               ),
               child: TextField(
+                controller: _controller,
                 decoration: InputDecoration(
                   hintText: 'Write a message...',
                   hintStyle: TextStyle(
@@ -44,14 +67,14 @@ class ChatInputBar extends StatelessWidget {
                   border: InputBorder.none,
                   contentPadding: EdgeInsets.symmetric(vertical: 12.h),
                 ),
+                onSubmitted: (_) => _submit(),
               ),
             ),
           ),
           SizedBox(width: 12.w),
-          Icon(
-            Icons.send,
-            color: AppColors.accentCyan,
-            size: 28.sp,
+          GestureDetector(
+            onTap: _submit,
+            child: Icon(Icons.send, color: AppColors.accentCyan, size: 28.sp),
           ),
         ],
       ),

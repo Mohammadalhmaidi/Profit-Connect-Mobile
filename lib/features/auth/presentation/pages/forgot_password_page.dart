@@ -1,10 +1,61 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:dio/dio.dart';
+import '../../../../core/di/dependency_injection.dart';
+import '../../../../core/error/dio_error_handler.dart';
+import '../../../../core/routes/app_router.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/snackbar_utils.dart';
+import '../../../../api_service.dart';
 import '../widgets/custom_text_field.dart';
 
-class ForgotPasswordPage extends StatelessWidget {
+class ForgotPasswordPage extends StatefulWidget {
   const ForgotPasswordPage({super.key});
+
+  @override
+  State<ForgotPasswordPage> createState() => _ForgotPasswordPageState();
+}
+
+class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
+  final TextEditingController _emailController = TextEditingController();
+  bool _isLoading = false;
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _sendResetCode() async {
+    final email = _emailController.text.trim();
+    if (email.isEmpty) {
+      SnackBarUtils.showError(context, 'Please enter your email address');
+      return;
+    }
+    if (!RegExp(r"^[a-zA-Z0-9+_.-]+@[a-zA-Z0-9.-]+$").hasMatch(email)) {
+      SnackBarUtils.showError(context, 'Enter a valid email');
+      return;
+    }
+
+    setState(() => _isLoading = true);
+    try {
+      await sl<ApiService>().forgotPassword(email);
+      if (!mounted) return;
+      SnackBarUtils.showSuccess(
+        context,
+        'If the email is registered, a verification code will be sent',
+      );
+      Navigator.pushNamed(context, AppRouter.resetPassword, arguments: email);
+    } on DioException catch (e) {
+      if (!mounted) return;
+      SnackBarUtils.showFailure(context, handleDioError(e));
+    } catch (_) {
+      if (!mounted) return;
+      SnackBarUtils.showError(context, 'Something went wrong. Please try again.');
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -56,35 +107,45 @@ class ForgotPasswordPage extends StatelessWidget {
                 ),
               ),
               SizedBox(height: 48.h),
-              const CustomTextField(
+              CustomTextField(
                 label: 'Email Address',
                 hintText: 'name@example.com',
-                suffixIcon: Icons.email_outlined,
+                suffixIcon: const Icon(Icons.email_outlined),
+                controller: _emailController,
+                keyboardType: TextInputType.emailAddress,
               ),
               SizedBox(height: 40.h),
               SizedBox(
                 width: double.infinity,
                 height: 60.h,
                 child: ElevatedButton(
-                  onPressed: () {
-                    // Logic for sending reset code
-                    debugPrint('Send Reset Code Pressed');
-                  },
+                  onPressed: _isLoading ? null : _sendResetCode,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primaryDark,
+                    disabledBackgroundColor:
+                        AppColors.primaryDark.withValues(alpha: 0.5),
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30.r),
                     ),
                     elevation: 0,
                   ),
-                  child: Text(
-                    'Send Reset Code',
-                    style: TextStyle(
-                      fontSize: 18.sp,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  child: _isLoading
+                      ? const SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2.5,
+                          ),
+                        )
+                      : Text(
+                          'Send Reset Code',
+                          style: TextStyle(
+                            fontSize: 18.sp,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                 ),
               ),
             ],

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../widgets/notification_tile.dart';
 
@@ -123,10 +124,10 @@ class NotificationsPage extends StatelessWidget {
             NotificationTile(
               leading: Stack(
                 children: [
-                  CircleAvatar(
-                    radius: 24.r,
-                    backgroundImage: const NetworkImage('https://i.pravatar.cc/150?u=james'),
-                  ),
+CircleAvatar(
+                      radius: 24.r,
+                      backgroundImage: const CachedNetworkImageProvider('https://i.pravatar.cc/150?u=james'),
+                    ),
                   Positioned(
                     bottom: 0,
                     right: 0,

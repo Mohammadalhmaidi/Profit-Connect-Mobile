@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../core/theme/app_colors.dart';
 
 class JobResultCard extends StatefulWidget {
@@ -78,7 +79,15 @@ class _JobResultCardState extends State<JobResultCard> {
                       ),
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(12.r),
-                        child: Image.network(widget.logoUrl, fit: BoxFit.cover),
+                        child: CachedNetworkImage(
+                          imageUrl: widget.logoUrl,
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) => Container(
+                            color: AppColors.fieldBackground,
+                            child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                          ),
+                          errorWidget: (context, url, error) => const Icon(Icons.business, color: Colors.grey),
+                        ),
                       ),
                     ),
                   ),
