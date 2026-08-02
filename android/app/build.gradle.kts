@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.my_first_app"
+    namespace = "com.profitconnect.mobile"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -19,8 +19,8 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.my_first_app"
-        minSdk = 21
+        applicationId = "com.profitconnect.mobile"
+        minSdk = 23
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName

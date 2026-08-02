@@ -39,12 +39,6 @@ class DeepLinkService {
           Navigator.pushNamed(context, AppRouter.jobDetails, arguments: jobId);
         }
         break;
-      case 'company':
-        if (segments.length >= 2) {
-          final companyId = segments[1];
-          Navigator.pushNamed(context, AppRouter.companyDetails, arguments: companyId);
-        }
-        break;
       case 'chat':
         if (segments.length >= 2) {
           final conversationId = segments[1];

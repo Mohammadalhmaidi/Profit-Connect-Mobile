@@ -40,6 +40,8 @@ dependencies:
   image_picker: ^1.1.2
   file_picker: ^8.0.3
   video_player: ^2.9.2
+  visibility_detector: ^0.4.0+2
+  flutter_native_splash: ^2.4.4
   
   # Utilities
   intl: ^0.19.0
@@ -85,17 +87,18 @@ dev_dependencies:
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "assets/images/logo.svg"
-  min_sdk_android: 21
-  adaptive_icon_foreground: "assets/images/logo.svg"
-  adaptive_icon_background: "#FFFFFF"
+  image_path: "assets/images/logo.png"
+  min_sdk_android: 23
+  adaptive_icon_foreground: "assets/images/logo.png"
+  adaptive_icon_background: "#004D40"
   web:
     generate: true
-    image_path: "assets/images/logo.svg"
+    image_path: "assets/images/logo.png"
     background_color: "#004D40"
     theme_color: "#004D40"
 
 flutter:
   uses-material-design: true
   assets:
+    - .env
     - assets/images/logo.svg

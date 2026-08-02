@@ -171,7 +171,7 @@ class _SignUpPageState extends State<SignUpPage> {
                     ),
                     SizedBox(height: 8.h),
                     Text(
-                      'Join the CareerPath community',
+                      'Join the Profit Connect community',
                       style: TextStyle(
                         color: AppColors.textSecondary,
                         fontSize: 16.sp,

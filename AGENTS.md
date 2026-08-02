@@ -4,7 +4,7 @@
 Profit Connect Mobile is a Flutter application for professional networking and job search.
 
 ## Tech Stack
-- **Framework**: Flutter 3.22+
+- **Framework**: Flutter 3.44+
 - **State Management**: flutter_bloc (BLoC/Cubit)
 - **DI**: GetIt
 - **Networking**: Dio
@@ -54,7 +54,7 @@ make clean        # Clean build
 
 ## Backend API
 - Backend: Node.js/Express at `profit-connect-backend/`
-- Default API URL: `http://10.0.2.2:5000` (Android emulator)
+- Default API URL: `https://api.profitconnect.com` (overridable via `API_BASE_URL` in `.env`; use `http://10.0.2.2:5000` for Android emulator)
 - Endpoints: `/api/auth`, `/api/user`, `/api/posts`, `/api/jobs`, `/api/messages`, `/api/companies`, `/api/projects`, `/api/translate`
 - No WebSocket — Chat uses REST polling (3s interval)
 - Auto token refresh on 401 responses

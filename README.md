@@ -55,8 +55,8 @@ feature/
 ## 🚀 Getting Started
 
 ### Prerequisites
-- Flutter SDK 3.22+
-- Dart 3.4+
+- Flutter SDK 3.44+
+- Dart 3.11+
 - Android Studio / VS Code
 - Git
 

@@ -7,7 +7,7 @@ on:
     branches: [main, develop]
 
 env:
-  FLUTTER_VERSION: '3.22.0'
+  FLUTTER_VERSION: '3.44.8'
   JAVA_VERSION: '17'
 
 jobs:
@@ -121,6 +121,7 @@ jobs:
     needs: [build-android, build-ios, build-web]
     if: github.ref == 'refs/heads/develop'
     steps:
+      - uses: actions/checkout@v4
       - name: Setup Fastlane
         run: |
           sudo gem install fastlane
@@ -132,6 +133,7 @@ jobs:
     needs: [build-android, build-ios, build-web]
     if: github.ref == 'refs/heads/main'
     steps:
+      - uses: actions/checkout@v4
       - name: Setup Fastlane
         run: |
           sudo gem install fastlane

@@ -2,9 +2,36 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:profit_connect_mobile/features/auth/presentation/pages/login_page.dart';
 import 'package:profit_connect_mobile/features/auth/presentation/bloc/auth_bloc.dart';
-import 'package:profit_connect_mobile/core/di/dependency_injection.dart';
+import 'package:profit_connect_mobile/features/auth/domain/usecases/login_usecase.dart';
+import 'package:profit_connect_mobile/features/auth/domain/repositories/auth_repository.dart';
+import 'package:profit_connect_mobile/features/auth/data/services/auth_social_service.dart';
+
+class MockAuthRepository extends Mock implements AuthRepository {}
+
+class MockLoginUseCase extends Mock implements LoginUseCase {}
+
+class MockAuthSocialService extends Mock implements AuthSocialService {}
+
+Widget _wrapLoginPage() {
+  return ScreenUtilInit(
+    designSize: const Size(375, 812),
+    builder: (context, child) => MultiBlocProvider(
+      providers: [
+        BlocProvider<AuthBloc>(
+          create: (context) => AuthBloc(
+            loginUseCase: MockLoginUseCase(),
+            authRepository: MockAuthRepository(),
+            authSocialService: MockAuthSocialService(),
+          ),
+        ),
+      ],
+      child: const MaterialApp(home: LoginPage()),
+    ),
+  );
+}
 
 void main() {
   group('LoginPage Widget Tests', () {
@@ -17,17 +44,10 @@ void main() {
         tester.view.resetDevicePixelRatio();
       });
 
-      await tester.pumpWidget(
-        ScreenUtilInit(
-          designSize: const Size(375, 812),
-          builder: (context, child) => MaterialApp(
-            home: LoginPage(),
-          ),
-        ),
-      );
+      await tester.pumpWidget(_wrapLoginPage());
 
       expect(find.byType(TextField), findsAtLeast(2));
-      expect(find.text('Log In'), findsOneWidget);
+      expect(find.text('Log In'), findsWidgets);
     });
 
     testWidgets('shows validation error on empty fields', (WidgetTester tester) async {
@@ -39,14 +59,7 @@ void main() {
         tester.view.resetDevicePixelRatio();
       });
 
-      await tester.pumpWidget(
-        ScreenUtilInit(
-          designSize: const Size(375, 812),
-          builder: (context, child) => MaterialApp(
-            home: LoginPage(),
-          ),
-        ),
-      );
+      await tester.pumpWidget(_wrapLoginPage());
 
       final loginButton = find.text('Log In');
       await tester.tap(loginButton);

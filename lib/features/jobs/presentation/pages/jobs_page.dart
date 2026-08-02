@@ -60,7 +60,7 @@ class _JobsPageState extends State<JobsPage> {
           ),
         ),
         title: Text(
-          'CareerPath Jobs',
+          'Profit Connect Jobs',
           style: TextStyle(
             color: AppColors.primaryDark,
             fontSize: 20.sp,

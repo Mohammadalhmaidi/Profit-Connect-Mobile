@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:bloc_test/bloc_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:profit_connect_mobile/core/theme/app_theme.dart';
+import 'package:profit_connect_mobile/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:profit_connect_mobile/features/auth/domain/entities/user_entity.dart';
+import 'package:profit_connect_mobile/features/jobs/domain/entities/job_entity.dart';
+import 'package:profit_connect_mobile/features/feed/domain/entities/post_entity.dart';
 
 /// Template for widget tests
 /// Copy this file and rename for each widget test
@@ -27,7 +32,7 @@ Widget createTestWidget({
 
 /// Common test helpers
 extension WidgetTesterHelpers on WidgetTester {
-  Future<void> pumpAndSettle({Duration duration = const Duration(milliseconds: 500)}) async {
+  Future<void> pumpAndSettleWithDelay({Duration duration = const Duration(milliseconds: 500)}) async {
     await pump(duration);
     await pumpAndSettle();
   }
@@ -57,10 +62,8 @@ extension WidgetTesterHelpers on WidgetTester {
   }
 }
 
-/// Common matchers
-final isLoading = findsOneWidget;
-final isEmpty = findsNothing;
-final isVisible = findsOneWidget;
+/// Common finders
+final isLoadingIndicator = find.byType(CircularProgressIndicator);
 
 /// Test data builders
 class TestDataBuilder {

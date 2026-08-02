@@ -17,7 +17,13 @@ class RetryInterceptor extends Interceptor {
     DioException err,
     ErrorInterceptorHandler handler,
   ) async {
-    if (!retryStatusCodes.contains(err.response?.statusCode)) {
+    final isRetryableStatus = retryStatusCodes.contains(err.response?.statusCode);
+    final isIdempotentMethod =
+        err.requestOptions.method == 'GET' ||
+        err.requestOptions.method == 'HEAD' ||
+        err.requestOptions.method == 'OPTIONS';
+
+    if (!isRetryableStatus || !isIdempotentMethod) {
       return handler.next(err);
     }
 

@@ -10,8 +10,12 @@ import 'package:internet_connection_checker_plus/internet_connection_checker_plu
 class ApiService {
   final Dio _dio = Dio();
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
+  Future<bool>? _refreshInFlight;
 
-  static String get baseUrl => dotenv.env['API_BASE_URL'] ?? 'http://10.0.2.2:5000';
+  static String get baseUrl =>
+      dotenv.env['API_BASE_URL']?.isNotEmpty == true
+          ? dotenv.env['API_BASE_URL']!
+          : 'https://api.profitconnect.com';
 
   static const int maxRetries = 3;
   static const Duration retryDelay = Duration(seconds: 1);
@@ -63,7 +67,13 @@ class ApiService {
 
   Dio get dio => _dio;
 
-  Future<bool> _refreshToken() async {
+  Future<bool> _refreshToken() {
+    return _refreshInFlight ??= _doRefreshToken().whenComplete(() {
+      _refreshInFlight = null;
+    });
+  }
+
+  Future<bool> _doRefreshToken() async {
     try {
       final refreshToken = await _storage.read(key: 'refresh_token');
       if (refreshToken == null) return false;

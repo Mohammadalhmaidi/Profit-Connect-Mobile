@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
+import '../../api_service.dart';
 
 class AppUpdateChecker {
   static final AppUpdateChecker _instance = AppUpdateChecker._internal();

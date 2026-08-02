@@ -56,7 +56,7 @@ class DashboardLogo extends StatelessWidget {
         ),
         SizedBox(height: 40.h),
         Text(
-          'CareerPath',
+          'Profit Connect',
           style: TextStyle(
             color: Colors.white,
             fontSize: 42.sp,

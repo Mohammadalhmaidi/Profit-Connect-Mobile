@@ -110,7 +110,7 @@ class _LoginPageState extends State<LoginPage> {
                   const BrandLogo(width: 120),
                   SizedBox(height: 16.h),
                   Text(
-                    'Welcome to CareerPath',
+                    'Welcome to Profit Connect',
                     style: TextStyle(
                       color: AppColors.primary,
                       fontSize: 24.sp,

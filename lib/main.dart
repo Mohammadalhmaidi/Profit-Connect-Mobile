@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_animation.dart';
@@ -25,11 +26,18 @@ import 'features/company/presentation/manager/company_bloc.dart';
 import 'features/feed/presentation/manager/post_bloc.dart';
 import 'features/jobs/presentation/manager/jobs_bloc.dart';
 
+final GlobalKey<NavigatorState> appNavigatorKey = GlobalKey<NavigatorState>();
+
 void main() async {
   final WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-  await dotenv.load(fileName: '.env');
+
+  try {
+    await dotenv.load(fileName: '.env');
+  } catch (e) {
+    debugPrint('Env load skipped: $e');
+  }
 
   Bloc.observer = SimpleBlocObserver();
 
@@ -39,9 +47,29 @@ void main() async {
     debugPrint('DI Error: $e');
   }
 
-  await SentryService.init();
-  await FirebaseMessagingService().initialize();
-  AppUpdateChecker().checkForUpdate();
+  try {
+    await Firebase.initializeApp();
+  } catch (e) {
+    debugPrint('Firebase init skipped: $e');
+  }
+
+  try {
+    await SentryService.init();
+  } catch (e) {
+    debugPrint('Sentry init skipped: $e');
+  }
+
+  try {
+    await FirebaseMessagingService().initialize();
+  } catch (e) {
+    debugPrint('Firebase Messaging init skipped: $e');
+  }
+
+  AppUpdateChecker().checkForUpdate().then((result) {
+    if (result.isUpdateAvailable) {
+      debugPrint('Update available: ${result.serverVersion}');
+    }
+  });
 
   runApp(const ProfitApp());
 }
@@ -105,6 +133,7 @@ class _AppRootState extends State<_AppRoot> {
               builder: (context, child) {
                 return MaterialApp(
                   debugShowCheckedModeBanner: false,
+                  navigatorKey: appNavigatorKey,
                   title: AppLocalizations.of(context)?.appName ?? 'Profit Connect',
                   theme: AppTheme.lightTheme,
                   darkTheme: AppTheme.darkTheme,

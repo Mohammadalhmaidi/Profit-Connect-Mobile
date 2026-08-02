@@ -1,5 +1,6 @@
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class SentryService {
   static final SentryService _instance = SentryService._internal();
@@ -19,7 +20,7 @@ class SentryService {
         options.enableTracing = true;
         options.debug = !kReleaseMode;
         options.attachThreads = true;
-        options.attachStacks = true;
+        options.attachStacktrace = true;
         options.sendDefaultPii = false;
       },
       appRunner: () {},
