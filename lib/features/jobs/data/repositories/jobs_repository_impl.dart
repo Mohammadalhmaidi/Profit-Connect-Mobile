@@ -21,15 +21,17 @@ class JobsRepositoryImpl implements JobsRepository {
     String? type,
     String? workPlace,
     String? workLevel,
-  }) async {
-    return safeApiCallWithNetworkCheck(
-      networkInfo: networkInfo,
-      call: () => remoteDataSource.getJobs(
-        search: search,
-        type: type,
-        workPlace: workPlace,
-        workLevel: workLevel,
-      ),
-    );
-  }
+    int page = 1,
+    int limit = 20,
+  }) async => safeApiCallWithNetworkCheck(
+    networkInfo: networkInfo,
+    call: () => remoteDataSource.getJobs(
+      search: search,
+      type: type,
+      workPlace: workPlace,
+      workLevel: workLevel,
+      page: page,
+      limit: limit,
+    ),
+  );
 }

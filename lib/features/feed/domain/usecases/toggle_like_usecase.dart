@@ -7,7 +7,6 @@ class ToggleLikeUseCase {
 
   ToggleLikeUseCase(this.repository);
 
-  Future<Either<Failure, void>> call(String postId) async {
-    return await repository.toggleLike(postId);
-  }
+  Future<Either<Failure, void>> call(String postId) async =>
+      repository.toggleLike(postId);
 }

@@ -1,5 +1,4 @@
-import 'package:equatable/equatable.dart';
-import '../../domain/entities/post_entity.dart';
+part of 'post_bloc.dart';
 
 abstract class PostState extends Equatable {
   const PostState();
@@ -33,13 +32,11 @@ class PostsLoaded extends PostState {
     List<PostEntity>? posts,
     bool? hasReachedMax,
     int? currentPage,
-  }) {
-    return PostsLoaded(
-      posts: posts ?? this.posts,
-      hasReachedMax: hasReachedMax ?? this.hasReachedMax,
-      currentPage: currentPage ?? this.currentPage,
-    );
-  }
+  }) => PostsLoaded(
+    posts: posts ?? this.posts,
+    hasReachedMax: hasReachedMax ?? this.hasReachedMax,
+    currentPage: currentPage ?? this.currentPage,
+  );
 
   @override
   List<Object?> get props => [posts, hasReachedMax, currentPage];

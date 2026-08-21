@@ -12,6 +12,8 @@ abstract class PostRemoteDataSource {
     List<String> hashtags = const [],
     String? mediaUrl,
     String? videoUrl,
+    String? imagePath,
+    String? videoPath,
     PostType postType = PostType.normal,
     String? budget,
     String? deadline,
@@ -34,10 +36,15 @@ class PostRemoteDataSourceImpl implements PostRemoteDataSource {
   Future<List<PostModel>> getPosts({int page = 1, int limit = 10}) async {
     final response = await _apiService.getPosts(page: page, limit: limit);
     final body = response.data as Map<String, dynamic>;
-    final List<dynamic> data = body['data'] as List<dynamic>? ?? [];
+    final data = body['data'] as List<dynamic>? ?? [];
     final currentUserId = await _apiService.getCurrentUserId();
     return data
-        .map((json) => PostModel.fromJson(json as Map<String, dynamic>, currentUserId: currentUserId))
+        .map(
+          (json) => PostModel.fromJson(
+            json as Map<String, dynamic>,
+            currentUserId: currentUserId,
+          ),
+        )
         .toList();
   }
 
@@ -56,13 +63,17 @@ class PostRemoteDataSourceImpl implements PostRemoteDataSource {
     List<String> hashtags = const [],
     String? mediaUrl,
     String? videoUrl,
+    String? imagePath,
+    String? videoPath,
     PostType postType = PostType.normal,
     String? budget,
     String? deadline,
   }) async {
-    final response = await _apiService.createPostMultipart({
-      'content': content,
-    });
+    final response = await _apiService.createPostMultipart(
+      {'content': content},
+      imagePath: imagePath,
+      videoPath: videoPath,
+    );
     final body = response.data as Map<String, dynamic>;
     final postJson = body['data'] as Map<String, dynamic>;
     final currentUserId = await _apiService.getCurrentUserId();

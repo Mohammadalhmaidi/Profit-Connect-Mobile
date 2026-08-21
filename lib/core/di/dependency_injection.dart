@@ -45,6 +45,7 @@ import '../../features/feed/domain/repositories/post_repository.dart';
 import '../../features/feed/domain/usecases/get_posts_usecase.dart';
 import '../../features/feed/domain/usecases/get_post_usecase.dart';
 import '../../features/feed/domain/usecases/create_post_usecase.dart';
+import '../../features/feed/domain/usecases/add_comment_usecase.dart';
 import '../../features/feed/domain/usecases/toggle_like_usecase.dart';
 import '../../features/feed/presentation/manager/post_bloc.dart';
 import '../../features/feed/presentation/manager/post_detail_cubit.dart';
@@ -52,6 +53,9 @@ import '../../features/feed/presentation/manager/create_post_cubit.dart';
 
 // Deep Linking
 import '../deep_linking/deep_link_service.dart';
+
+// Notifications
+import '../../features/notifications/presentation/manager/notifications_cubit.dart';
 
 final sl = GetIt.instance;
 
@@ -64,7 +68,7 @@ Future<void> initDI() async {
     () => const FlutterSecureStorage(),
   );
 
-  sl.registerLazySingleton<InternetConnection>(() => InternetConnection());
+  sl.registerLazySingleton<InternetConnection>(InternetConnection.new);
 
   sl.registerLazySingleton<NetworkInfo>(
     () => NetworkInfoImpl(kIsWeb ? null : sl<InternetConnection>()),
@@ -74,26 +78,21 @@ Future<void> initDI() async {
     () => ConnectivityInterceptor(sl<InternetConnection>()),
   );
 
-  sl.registerLazySingleton<RetryInterceptor>(
-    () => RetryInterceptor(
-      maxRetries: 3,
-      retryDelay: const Duration(seconds: 1),
+  sl.registerLazySingleton<RetryInterceptor>(RetryInterceptor.new);
+
+  sl.registerLazySingleton<ApiService>(
+    () => ApiService(
+      connectivityInterceptor: sl<ConnectivityInterceptor>(),
+      retryInterceptor: sl<RetryInterceptor>(),
     ),
   );
-
-  sl.registerLazySingleton<ApiService>(() => ApiService(
-    connectivityInterceptor: sl<ConnectivityInterceptor>(),
-    retryInterceptor: sl<RetryInterceptor>(),
-  ));
 
   sl.registerLazySingleton<AppSettingsCubit>(
     () => AppSettingsCubit(sharedPreferences: sl()),
   );
 
   // --- Deep Linking ---
-  sl.registerLazySingleton<DeepLinkService>(
-    () => DeepLinkService(),
-  );
+  sl.registerLazySingleton<DeepLinkService>(DeepLinkService.new);
 
   // --- Features: Auth ---
   sl.registerLazySingleton<AuthSocialService>(
@@ -123,19 +122,12 @@ Future<void> initDI() async {
   );
 
   // --- Features: Jobs ---
-  sl.registerFactory<JobsBloc>(
-    () => JobsBloc(getJobsUseCase: sl()),
-  );
+  sl.registerFactory<JobsBloc>(() => JobsBloc(getJobsUseCase: sl()));
 
-  sl.registerLazySingleton<GetJobsUseCase>(
-    () => GetJobsUseCase(sl()),
-  );
+  sl.registerLazySingleton<GetJobsUseCase>(() => GetJobsUseCase(sl()));
 
   sl.registerLazySingleton<JobsRepository>(
-    () => JobsRepositoryImpl(
-      remoteDataSource: sl(),
-      networkInfo: sl(),
-    ),
+    () => JobsRepositoryImpl(remoteDataSource: sl(), networkInfo: sl()),
   );
 
   sl.registerLazySingleton<JobsRemoteDataSource>(
@@ -144,10 +136,7 @@ Future<void> initDI() async {
 
   // --- Features: Feed / Posts ---
   sl.registerFactory<PostBloc>(
-    () => PostBloc(
-      getPostsUseCase: sl(),
-      toggleLikeUseCase: sl(),
-    ),
+    () => PostBloc(getPostsUseCase: sl(), toggleLikeUseCase: sl()),
   );
 
   sl.registerFactory<CreatePostCubit>(
@@ -157,17 +146,19 @@ Future<void> initDI() async {
   sl.registerLazySingleton<GetPostsUseCase>(() => GetPostsUseCase(sl()));
   sl.registerLazySingleton<GetPostUseCase>(() => GetPostUseCase(sl()));
   sl.registerLazySingleton<CreatePostUseCase>(() => CreatePostUseCase(sl()));
+  sl.registerLazySingleton<AddCommentUseCase>(() => AddCommentUseCase(sl()));
   sl.registerLazySingleton<ToggleLikeUseCase>(() => ToggleLikeUseCase(sl()));
 
   sl.registerFactory<PostDetailCubit>(
-    () => PostDetailCubit(getPostUseCase: sl()),
+    () => PostDetailCubit(
+      getPostUseCase: sl(),
+      addCommentUseCase: sl(),
+      toggleLikeUseCase: sl(),
+    ),
   );
 
   sl.registerLazySingleton<PostRepository>(
-    () => PostRepositoryImpl(
-      remoteDataSource: sl(),
-      networkInfo: sl(),
-    ),
+    () => PostRepositoryImpl(remoteDataSource: sl(), networkInfo: sl()),
   );
 
   sl.registerLazySingleton<PostRemoteDataSource>(
@@ -182,22 +173,22 @@ Future<void> initDI() async {
     () => CreateCompanyUseCase(sl()),
   );
   sl.registerLazySingleton<CompanyRepository>(
-    () => CompanyRepositoryImpl(
-      remoteDataSource: sl(),
-      networkInfo: sl(),
-    ),
+    () => CompanyRepositoryImpl(remoteDataSource: sl(), networkInfo: sl()),
   );
   sl.registerLazySingleton<CompanyRemoteDataSource>(
     () => CompanyRemoteDataSourceImpl(sl<ApiService>()),
   );
 
   // --- Features: Chat REST ---
-  sl.registerLazySingleton<ChatRestService>(
-    () => ChatRestService(sl<ApiService>()),
+  // Factory وليس Singleton: كل صفحة محادثة تملك خدمتها الخاصة
+  // حتى لا يخطف استطلاع صفحةٍ استطلاعَ صفحة أخرى.
+  sl.registerFactory<ChatRestService>(() => ChatRestService(sl<ApiService>()));
+
+  // --- Features: Notifications ---
+  sl.registerFactory<NotificationsCubit>(
+    () => NotificationsCubit(sl<ApiService>()),
   );
 
   // --- Theme ---
-  sl.registerLazySingleton<ThemeBloc>(
-    () => ThemeBloc(sharedPreferences: sl()),
-  );
+  sl.registerLazySingleton<ThemeBloc>(() => ThemeBloc(sharedPreferences: sl()));
 }

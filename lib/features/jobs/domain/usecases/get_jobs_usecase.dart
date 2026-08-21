@@ -13,12 +13,14 @@ class GetJobsUseCase {
     String? type,
     String? workPlace,
     String? workLevel,
-  }) async {
-    return await repository.getJobs(
-      search: search,
-      type: type,
-      workPlace: workPlace,
-      workLevel: workLevel,
-    );
-  }
+    int page = 1,
+    int limit = 20,
+  }) async => repository.getJobs(
+    search: search,
+    type: type,
+    workPlace: workPlace,
+    workLevel: workLevel,
+    page: page,
+    limit: limit,
+  );
 }

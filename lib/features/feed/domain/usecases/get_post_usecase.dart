@@ -8,7 +8,6 @@ class GetPostUseCase {
 
   const GetPostUseCase(this.repository);
 
-  Future<Either<Failure, PostEntity>> call(String postId) async {
-    return await repository.getPostById(postId);
-  }
+  Future<Either<Failure, PostEntity>> call(String postId) async =>
+      repository.getPostById(postId);
 }

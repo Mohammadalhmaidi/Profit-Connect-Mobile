@@ -9,8 +9,7 @@ part 'company_state.dart';
 class CompanyBloc extends Bloc<CompanyEvent, CompanyState> {
   final CreateCompanyUseCase createCompanyUseCase;
 
-  CompanyBloc({required this.createCompanyUseCase})
-      : super(CompanyInitial()) {
+  CompanyBloc({required this.createCompanyUseCase}) : super(CompanyInitial()) {
     on<CreateCompanyEvent>(_onCreateCompany);
     on<ResetCompanyEvent>((event, emit) => emit(CompanyInitial()));
   }
@@ -20,14 +19,16 @@ class CompanyBloc extends Bloc<CompanyEvent, CompanyState> {
     Emitter<CompanyState> emit,
   ) async {
     emit(CompanyLoading());
-    final result = await createCompanyUseCase(CreateCompanyParams(
-      name: event.name,
-      description: event.description,
-      industry: event.industry,
-      website: event.website,
-      location: event.location,
-      logo: event.logo,
-    ));
+    final result = await createCompanyUseCase(
+      CreateCompanyParams(
+        name: event.name,
+        description: event.description,
+        industry: event.industry,
+        website: event.website,
+        location: event.location,
+        logo: event.logo,
+      ),
+    );
     result.fold(
       (failure) => emit(CompanyError(failure.message)),
       (company) => emit(CompanyCreated(company)),

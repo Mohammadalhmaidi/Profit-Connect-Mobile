@@ -19,61 +19,58 @@ class PostRepositoryImpl implements PostRepository {
   Future<Either<Failure, List<PostEntity>>> getPosts({
     int page = 1,
     int limit = 10,
-  }) async {
-    return safeApiCallWithNetworkCheck(
-      networkInfo: networkInfo,
-      call: () => remoteDataSource.getPosts(page: page, limit: limit),
-    );
-  }
+  }) async => safeApiCallWithNetworkCheck(
+    networkInfo: networkInfo,
+    call: () => remoteDataSource.getPosts(page: page, limit: limit),
+  );
 
   @override
-  Future<Either<Failure, PostEntity>> getPostById(String postId) async {
-    return safeApiCallWithNetworkCheck(
-      networkInfo: networkInfo,
-      call: () => remoteDataSource.getPostById(postId),
-    );
-  }
+  Future<Either<Failure, PostEntity>> getPostById(String postId) async =>
+      safeApiCallWithNetworkCheck(
+        networkInfo: networkInfo,
+        call: () => remoteDataSource.getPostById(postId),
+      );
 
+  @override
   @override
   Future<Either<Failure, PostEntity>> createPost({
     required String content,
     List<String> hashtags = const [],
     String? mediaUrl,
     String? videoUrl,
+    String? imagePath,
+    String? videoPath,
     PostType postType = PostType.normal,
     String? budget,
     String? deadline,
-  }) async {
-    return safeApiCallWithNetworkCheck(
-      networkInfo: networkInfo,
-      call: () => remoteDataSource.createPost(
-        content: content,
-        hashtags: hashtags,
-        mediaUrl: mediaUrl,
-        videoUrl: videoUrl,
-        postType: postType,
-        budget: budget,
-        deadline: deadline,
-      ),
-    );
-  }
+  }) async => safeApiCallWithNetworkCheck(
+    networkInfo: networkInfo,
+    call: () => remoteDataSource.createPost(
+      content: content,
+      hashtags: hashtags,
+      mediaUrl: mediaUrl,
+      videoUrl: videoUrl,
+      imagePath: imagePath,
+      videoPath: videoPath,
+      postType: postType,
+      budget: budget,
+      deadline: deadline,
+    ),
+  );
 
   @override
-  Future<Either<Failure, void>> toggleLike(String postId) async {
-    return safeApiCallWithNetworkCheck(
-      networkInfo: networkInfo,
-      call: () => remoteDataSource.toggleLike(postId),
-    );
-  }
+  Future<Either<Failure, void>> toggleLike(String postId) async =>
+      safeApiCallWithNetworkCheck(
+        networkInfo: networkInfo,
+        call: () => remoteDataSource.toggleLike(postId),
+      );
 
   @override
   Future<Either<Failure, Map<String, dynamic>>> addComment({
     required String postId,
     required String comment,
-  }) async {
-    return safeApiCallWithNetworkCheck(
-      networkInfo: networkInfo,
-      call: () => remoteDataSource.addComment(postId: postId, comment: comment),
-    );
-  }
+  }) async => safeApiCallWithNetworkCheck(
+    networkInfo: networkInfo,
+    call: () => remoteDataSource.addComment(postId: postId, comment: comment),
+  );
 }

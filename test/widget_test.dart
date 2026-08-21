@@ -8,7 +8,8 @@ import 'package:profit_connect_mobile/features/auth/presentation/bloc/auth_bloc.
 import 'package:profit_connect_mobile/features/auth/domain/usecases/login_usecase.dart';
 import 'package:profit_connect_mobile/features/auth/domain/repositories/auth_repository.dart';
 import 'package:profit_connect_mobile/features/auth/data/services/auth_social_service.dart';
-import 'package:profit_connect_mobile/core/di/dependency_injection.dart';
+import 'package:profit_connect_mobile/l10n/app_localizations.dart';
+import 'package:profit_connect_mobile/core/theme/theme_colors.dart';
 
 class MockAuthRepository extends Mock implements AuthRepository {}
 
@@ -17,7 +18,9 @@ class MockLoginUseCase extends Mock implements LoginUseCase {}
 class MockAuthSocialService extends Mock implements AuthSocialService {}
 
 void main() {
-  testWidgets('LoginPage loads correctly and shows essential fields', (WidgetTester tester) async {
+  testWidgets('LoginPage loads correctly and shows essential fields', (
+    WidgetTester tester,
+  ) async {
     tester.view.physicalSize = const Size(1080, 1920);
     tester.view.devicePixelRatio = 1.0;
 
@@ -39,8 +42,11 @@ void main() {
               ),
             ),
           ],
-          child: const MaterialApp(
-            home: LoginPage(),
+          child: MaterialApp(
+            localizationsDelegates: const [AppLocalizationDelegate()],
+            supportedLocales: const [Locale('en'), Locale('ar')],
+            theme: ThemeData(extensions: const [AppThemeColors.light]),
+            home: const LoginPage(),
           ),
         ),
       ),
@@ -48,7 +54,7 @@ void main() {
 
     await tester.pump();
 
-    expect(find.text('Welcome to CareerPath'), findsOneWidget);
+    expect(find.text('Welcome to Profit Connect'), findsOneWidget);
     expect(find.text('Log In'), findsWidgets);
     expect(find.text('Email Address'), findsOneWidget);
     expect(find.text('Password'), findsOneWidget);

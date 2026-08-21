@@ -11,8 +11,8 @@ class CustomButton extends StatelessWidget {
   final Color? foregroundColor;
 
   const CustomButton({
-    super.key,
     required this.label,
+    super.key,
     this.onPressed,
     this.isLoading = false,
     this.icon,
@@ -21,47 +21,46 @@ class CustomButton extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      height: 56.h,
-      child: ElevatedButton(
-        onPressed: isLoading ? null : onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: backgroundColor ?? AppColors.primaryDark,
-          foregroundColor: foregroundColor ?? Colors.white,
-          disabledBackgroundColor: (backgroundColor ?? AppColors.primaryDark).withValues(alpha: 0.5),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(30.r),
-          ),
-          elevation: 0,
+  Widget build(BuildContext context) => SizedBox(
+    width: double.infinity,
+    height: 56.h,
+    child: ElevatedButton(
+      onPressed: isLoading ? null : onPressed,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: backgroundColor ?? AppColors.primaryDark,
+        foregroundColor: foregroundColor ?? Colors.white,
+        disabledBackgroundColor: (backgroundColor ?? AppColors.primaryDark)
+            .withValues(alpha: 0.5),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(30.r),
         ),
-        child: isLoading
-            ? const SizedBox(
-                height: 24,
-                width: 24,
-                child: CircularProgressIndicator(
-                  color: Colors.white,
-                  strokeWidth: 2.5,
-                ),
-              )
-            : Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    label,
-                    style: TextStyle(
-                      fontSize: 18.sp,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  if (icon != null) ...[
-                    SizedBox(width: 8.w),
-                    Icon(icon, size: 20.sp),
-                  ],
-                ],
-              ),
+        elevation: 0,
       ),
-    );
-  }
+      child: isLoading
+          ? const SizedBox(
+              height: 24,
+              width: 24,
+              child: CircularProgressIndicator(
+                color: Colors.white,
+                strokeWidth: 2.5,
+              ),
+            )
+          : Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                if (icon != null) ...[
+                  SizedBox(width: 8.w),
+                  Icon(icon, size: 20.sp),
+                ],
+              ],
+            ),
+    ),
+  );
 }

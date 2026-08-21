@@ -8,5 +8,7 @@ abstract class JobsRepository {
     String? type,
     String? workPlace,
     String? workLevel,
+    int page = 1,
+    int limit = 20,
   });
 }

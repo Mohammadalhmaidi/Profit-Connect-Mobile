@@ -7,6 +7,8 @@ abstract class JobsRemoteDataSource {
     String? type,
     String? workPlace,
     String? workLevel,
+    int page = 1,
+    int limit = 20,
   });
 }
 
@@ -21,12 +23,16 @@ class JobsRemoteDataSourceImpl implements JobsRemoteDataSource {
     String? type,
     String? workPlace,
     String? workLevel,
+    int page = 1,
+    int limit = 20,
   }) async {
     final response = await _apiService.getJobs(
       search: search,
       type: type,
       workPlace: workPlace,
       workLevel: workLevel,
+      page: page,
+      limit: limit,
     );
 
     final data = response.data;

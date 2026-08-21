@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 
-enum UserRole { Employer, JobSeeker, Admin, FreelanceClient }
+// ignore: constant_identifier_names
+enum UserRole { Employer, JobSeeker, Admin, FreelanceClient, CompanyEmployee }
 
 class UserEntity extends Equatable {
   final String id;
@@ -15,6 +16,8 @@ class UserEntity extends Equatable {
   final String? headline;
   final String? bio;
   final String? industry;
+  final String? birthDate;
+  final String? gender;
 
   const UserEntity({
     required this.id,
@@ -29,6 +32,8 @@ class UserEntity extends Equatable {
     this.headline,
     this.bio,
     this.industry,
+    this.birthDate,
+    this.gender,
   });
 
   UserEntity copyWith({
@@ -44,26 +49,40 @@ class UserEntity extends Equatable {
     String? headline,
     String? bio,
     String? industry,
-  }) {
-    return UserEntity(
-      id: id ?? this.id,
-      email: email ?? this.email,
-      fullName: fullName ?? this.fullName,
-      firstName: firstName ?? this.firstName,
-      lastName: lastName ?? this.lastName,
-      role: role ?? this.role,
-      skills: skills ?? this.skills,
-      companyId: companyId ?? this.companyId,
-      avatar: avatar ?? this.avatar,
-      headline: headline ?? this.headline,
-      bio: bio ?? this.bio,
-      industry: industry ?? this.industry,
-    );
-  }
+    String? birthDate,
+    String? gender,
+  }) => UserEntity(
+    id: id ?? this.id,
+    email: email ?? this.email,
+    fullName: fullName ?? this.fullName,
+    firstName: firstName ?? this.firstName,
+    lastName: lastName ?? this.lastName,
+    role: role ?? this.role,
+    skills: skills ?? this.skills,
+    companyId: companyId ?? this.companyId,
+    avatar: avatar ?? this.avatar,
+    headline: headline ?? this.headline,
+    bio: bio ?? this.bio,
+    industry: industry ?? this.industry,
+    birthDate: birthDate ?? this.birthDate,
+    gender: gender ?? this.gender,
+  );
 
   @override
   List<Object?> get props => [
-        id, email, fullName, firstName, lastName, role,
-        skills, companyId, avatar, headline, bio, industry,
-      ];
+    id,
+    email,
+    fullName,
+    firstName,
+    lastName,
+    role,
+    skills,
+    companyId,
+    avatar,
+    headline,
+    bio,
+    industry,
+    birthDate,
+    gender,
+  ];
 }

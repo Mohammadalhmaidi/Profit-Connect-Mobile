@@ -8,8 +8,8 @@ class MemorySafeVideoPlayer extends StatefulWidget {
   final bool autoPlay;
 
   const MemorySafeVideoPlayer({
-    super.key,
     required this.videoUrl,
+    super.key,
     this.height,
     this.autoPlay = true,
   });
@@ -23,16 +23,17 @@ class _MemorySafeVideoPlayerState extends State<MemorySafeVideoPlayer> {
   bool _isInitialized = false;
   bool _hasError = false;
   bool _isVisible = true;
+  bool _initStarted = false;
 
-  @override
-  void initState() {
-    super.initState();
-    _initPlayer();
-  }
-
+  /// تهيئة كسولة: لا ننشئ وحدة الفيديو حتى يصبح المكون ظاهراً على الشاشة،
+  /// لتفادي تحميل كل الفيديوهات في الخلاصة دفعة واحدة (مشاكل ذاكرة/بيانات).
   Future<void> _initPlayer() async {
+    if (_initStarted) return;
+    _initStarted = true;
     try {
-      _controller = VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl));
+      _controller = VideoPlayerController.networkUrl(
+        Uri.parse(widget.videoUrl),
+      );
       _controller!.addListener(_updateState);
       await _controller!.initialize();
       if (mounted) {
@@ -45,6 +46,22 @@ class _MemorySafeVideoPlayerState extends State<MemorySafeVideoPlayer> {
       debugPrint('VideoPlayer init error: $e');
       if (mounted) {
         setState(() => _hasError = true);
+      }
+    }
+  }
+
+  void _onVisibilityChanged(VisibilityInfo info) {
+    final isVisible = info.visibleFraction > 0.3;
+    if (isVisible && !_initStarted) {
+      _initPlayer();
+      return;
+    }
+    if (isVisible != _isVisible) {
+      _isVisible = isVisible;
+      if (_isVisible && widget.autoPlay) {
+        _controller?.play();
+      } else {
+        _controller?.pause();
       }
     }
   }
@@ -70,6 +87,7 @@ class _MemorySafeVideoPlayerState extends State<MemorySafeVideoPlayer> {
       _controller = null;
       _isInitialized = false;
       _hasError = false;
+      _initStarted = false;
       _initPlayer();
     }
   }
@@ -106,26 +124,20 @@ class _MemorySafeVideoPlayerState extends State<MemorySafeVideoPlayer> {
     }
 
     if (!_isInitialized) {
-      return Container(
-        height: widget.height ?? 200,
-        color: Colors.black12,
-        child: const Center(child: CircularProgressIndicator()),
+      return VisibilityDetector(
+        key: Key('video_lazy_${widget.videoUrl.hashCode}'),
+        onVisibilityChanged: _onVisibilityChanged,
+        child: Container(
+          height: widget.height ?? 200,
+          color: Colors.black12,
+          child: const Center(child: CircularProgressIndicator()),
+        ),
       );
     }
 
     return VisibilityDetector(
       key: Key('video_${widget.videoUrl.hashCode}'),
-      onVisibilityChanged: (VisibilityInfo info) {
-        final isVisible = info.visibleFraction > 0.5;
-        if (isVisible != _isVisible) {
-          _isVisible = isVisible;
-          if (_isVisible && widget.autoPlay) {
-            _controller?.play();
-          } else {
-            _controller?.pause();
-          }
-        }
-      },
+      onVisibilityChanged: _onVisibilityChanged,
       child: GestureDetector(
         onTap: _togglePlayPause,
         child: Stack(
@@ -136,9 +148,9 @@ class _MemorySafeVideoPlayerState extends State<MemorySafeVideoPlayer> {
               child: VideoPlayer(_controller!),
             ),
             if (!_controller!.value.isPlaying)
-              Container(
+              const ColoredBox(
                 color: Colors.black26,
-                child: const Icon(
+                child: Icon(
                   Icons.play_circle_fill,
                   size: 64,
                   color: Colors.white,
@@ -154,9 +166,7 @@ class _MemorySafeVideoPlayerState extends State<MemorySafeVideoPlayer> {
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
-                  _formatDuration(_controller!.value.position) +
-                      ' / ' +
-                      _formatDuration(_controller!.value.duration),
+                  '${_formatDuration(_controller!.value.position)} / ${_formatDuration(_controller!.value.duration)}',
                   style: const TextStyle(color: Colors.white, fontSize: 12),
                 ),
               ),

@@ -15,6 +15,10 @@ class MockLoginUseCase extends Mock implements LoginUseCase {}
 class MockAuthSocialService extends Mock implements AuthSocialService {}
 
 void main() {
+  setUpAll(() {
+    registerFallbackValue(const LoginParams(email: '', password: ''));
+  });
+
   group('AuthBloc', () {
     late AuthBloc authBloc;
     late MockAuthRepository mockAuthRepository;
@@ -41,18 +45,22 @@ void main() {
     });
 
     test('LoginEvent with valid credentials emits AuthSuccess', () async {
-      when(() => mockLoginUseCase(any())).thenAnswer((_) async => const Right(
-            UserEntity(id: '1', email: 'test@example.com', fullName: 'Test'),
-          ));
+      when(() => mockLoginUseCase(any())).thenAnswer(
+        (_) async => const Right(
+          UserEntity(id: '1', email: 'test@example.com', fullName: 'Test'),
+        ),
+      );
 
-      authBloc.add(LoginSubmitted(email: 'test@example.com', password: 'password123'));
+      authBloc.add(
+        const LoginSubmitted(
+          email: 'test@example.com',
+          password: 'password123',
+        ),
+      );
 
       await expectLater(
         authBloc.stream,
-        emitsInOrder([
-          isA<AuthLoading>(),
-          isA<AuthSuccess>(),
-        ]),
+        emitsInOrder([isA<AuthLoading>(), isA<AuthSuccess>()]),
       );
     });
 
@@ -61,14 +69,13 @@ void main() {
         (_) async => const Left(ServerFailure('Invalid credentials')),
       );
 
-      authBloc.add(LoginSubmitted(email: 'wrong@example.com', password: 'wrong'));
+      authBloc.add(
+        const LoginSubmitted(email: 'wrong@example.com', password: 'wrong'),
+      );
 
       await expectLater(
         authBloc.stream,
-        emitsInOrder([
-          isA<AuthLoading>(),
-          isA<AuthFailure>(),
-        ]),
+        emitsInOrder([isA<AuthLoading>(), isA<AuthFailure>()]),
       );
     });
   });

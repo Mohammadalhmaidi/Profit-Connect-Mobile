@@ -18,7 +18,8 @@ class CurrentUserAvatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final user = context.select<AuthBloc, UserEntity?>(
-      (bloc) => bloc.state is AuthSuccess ? (bloc.state as AuthSuccess).user : null,
+      (bloc) =>
+          bloc.state is AuthSuccess ? (bloc.state as AuthSuccess).user : null,
     );
     final avatarUrl = user?.avatar;
     if (avatarUrl != null && avatarUrl.isNotEmpty) {
@@ -30,11 +31,7 @@ class CurrentUserAvatar extends StatelessWidget {
     return CircleAvatar(
       radius: radius,
       backgroundColor: AppColors.chipUnselected,
-      child: Icon(
-        fallbackIcon,
-        color: AppColors.primaryDark,
-        size: radius,
-      ),
+      child: Icon(fallbackIcon, color: AppColors.primaryDark, size: radius),
     );
   }
 }

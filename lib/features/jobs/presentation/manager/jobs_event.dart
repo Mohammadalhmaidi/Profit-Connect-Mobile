@@ -12,9 +12,16 @@ class GetJobsEvent extends JobsEvent {
   final String? type;
   final String? workPlace;
   final String? workLevel;
+  final bool loadMore;
 
-  const GetJobsEvent({this.search, this.type, this.workPlace, this.workLevel});
+  const GetJobsEvent({
+    this.search,
+    this.type,
+    this.workPlace,
+    this.workLevel,
+    this.loadMore = false,
+  });
 
   @override
-  List<Object?> get props => [search, type, workPlace, workLevel];
+  List<Object?> get props => [search, type, workPlace, workLevel, loadMore];
 }

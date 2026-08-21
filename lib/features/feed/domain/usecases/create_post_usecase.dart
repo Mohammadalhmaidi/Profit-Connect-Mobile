@@ -9,17 +9,18 @@ class CreatePostUseCase {
 
   CreatePostUseCase(this.repository);
 
-  Future<Either<Failure, PostEntity>> call(CreatePostParams params) async {
-    return await repository.createPost(
-      content: params.content,
-      hashtags: params.hashtags,
-      mediaUrl: params.mediaUrl,
-      videoUrl: params.videoUrl,
-      postType: params.postType,
-      budget: params.budget,
-      deadline: params.deadline,
-    );
-  }
+  Future<Either<Failure, PostEntity>> call(CreatePostParams params) async =>
+      repository.createPost(
+        content: params.content,
+        hashtags: params.hashtags,
+        mediaUrl: params.mediaUrl,
+        videoUrl: params.videoUrl,
+        imagePath: params.imagePath,
+        videoPath: params.videoPath,
+        postType: params.postType,
+        budget: params.budget,
+        deadline: params.deadline,
+      );
 }
 
 class CreatePostParams extends Equatable {
@@ -27,6 +28,8 @@ class CreatePostParams extends Equatable {
   final List<String> hashtags;
   final String? mediaUrl;
   final String? videoUrl;
+  final String? imagePath;
+  final String? videoPath;
   final PostType postType;
   final String? budget;
   final String? deadline;
@@ -36,12 +39,23 @@ class CreatePostParams extends Equatable {
     this.hashtags = const [],
     this.mediaUrl,
     this.videoUrl,
+    this.imagePath,
+    this.videoPath,
     this.postType = PostType.normal,
     this.budget,
     this.deadline,
   });
 
   @override
-  List<Object?> get props =>
-      [content, hashtags, mediaUrl, videoUrl, postType, budget, deadline];
+  List<Object?> get props => [
+    content,
+    hashtags,
+    mediaUrl,
+    videoUrl,
+    imagePath,
+    videoPath,
+    postType,
+    budget,
+    deadline,
+  ];
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'app_page_route.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/signup_page.dart';
 import '../../features/auth/presentation/pages/forgot_password_page.dart';
@@ -8,21 +9,37 @@ import '../../features/onboarding/presentation/pages/profile_form_page.dart';
 import '../../features/onboarding/presentation/pages/strengths_page.dart';
 import '../../features/main_layout/presentation/pages/main_layout_page.dart';
 import '../../features/jobs/presentation/pages/jobs_page.dart';
+import '../../features/jobs/presentation/pages/my_applications_page.dart';
 import '../../features/jobs/presentation/pages/job_details_page.dart';
 import '../../features/jobs/presentation/pages/job_search_results_page.dart';
 import '../../features/jobs/domain/entities/job_entity.dart';
 import '../../features/messages/presentation/pages/messages_page.dart';
 import '../../features/messages/presentation/pages/chat_page.dart';
 import '../../features/notifications/presentation/pages/notifications_page.dart';
-import '../../features/social/presentation/pages/profile_page.dart';
-import '../../features/social/presentation/pages/main_nav_page.dart';
 import '../../features/settings/presentation/pages/settings_page.dart';
+import '../../features/settings/presentation/pages/change_password_page.dart';
 import '../../features/network/presentation/pages/network_page.dart';
+import '../../features/network/presentation/pages/search_users_page.dart';
 import '../../features/feed/presentation/pages/home_page.dart';
+import '../../features/feed/presentation/pages/hashtag_feed_page.dart';
 import '../../features/profile/presentation/pages/profile_creation_page.dart';
-import '../../features/profile/presentation/pages/profile_page.dart' as user_profile;
+import '../../features/profile/presentation/pages/profile_page.dart'
+    as user_profile;
+import '../../features/profile/presentation/pages/followers_page.dart';
 import '../../features/company/presentation/pages/company_creation_page.dart';
+import '../../features/company/presentation/pages/company_profile_page.dart';
+import '../../features/company/presentation/pages/company_dashboard_page.dart';
+import '../../features/wallet/presentation/pages/wallet_page.dart';
+import '../../features/salaries/presentation/pages/salaries_page.dart';
+import '../../features/payments/presentation/pages/payments_page.dart';
+import '../../features/projects/presentation/pages/projects_page.dart';
 import '../../features/feed/presentation/pages/post_details_page.dart';
+import '../../features/feed/presentation/pages/saved_posts_page.dart';
+import '../../features/feed/presentation/pages/leaderboard_page.dart';
+import '../../features/feed/presentation/pages/portfolio_page.dart';
+import '../../features/feed/presentation/pages/portfolio_item_details_page.dart';
+import '../../features/settings/presentation/pages/help_support_page.dart';
+import '../../features/settings/presentation/pages/about_page.dart';
 
 class AppRouter {
   static const String splash = '/';
@@ -37,16 +54,32 @@ class AppRouter {
   static const String jobs = '/jobs';
   static const String jobDetails = '/job-details';
   static const String jobSearch = '/job-search';
+  static const String myApplications = '/my-applications';
   static const String messages = '/messages';
   static const String chat = '/chat';
   static const String notifications = '/notifications';
   static const String profile = '/profile';
+  static const String followList = '/follow-list';
   static const String profileCreation = '/profile-creation';
   static const String settings = '/settings';
+  static const String changePassword = '/change-password';
   static const String network = '/network';
-  static const String mainNav = '/main-nav';
+  static const String searchUsers = '/search-users';
   static const String companyCreation = '/company-creation';
+  static const String companyProfile = '/company-profile';
+  static const String companyDashboard = '/company-dashboard';
+  static const String wallet = '/wallet';
+  static const String salaries = '/salaries';
+  static const String payments = '/payments';
+  static const String projects = '/projects';
   static const String postDetails = '/post-details';
+  static const String hashtagFeed = '/hashtag-feed';
+  static const String savedPosts = '/saved-posts';
+  static const String leaderboard = '/leaderboard';
+  static const String portfolio = '/portfolio';
+  static const String portfolioItem = '/portfolio-item';
+  static const String help = '/help-support';
+  static const String about = '/about';
 
   static final Map<String, String> deepLinkRoutes = {
     'post': postDetails,
@@ -58,45 +91,47 @@ class AppRouter {
   static Route<dynamic> generateRoute(RouteSettings routeSettings) {
     switch (routeSettings.name) {
       case splash:
-        return MaterialPageRoute(builder: (_) => const SplashPage());
+        return _page(const SplashPage(), routeSettings);
       case login:
-        return MaterialPageRoute(builder: (_) => const LoginPage());
+        return _page(const LoginPage(), routeSettings);
       case signUp:
-        return MaterialPageRoute(builder: (_) => const SignUpPage());
+        return _page(const SignUpPage(), routeSettings);
       case forgotPassword:
-        return MaterialPageRoute(builder: (_) => const ForgotPasswordPage());
+        return _page(const ForgotPasswordPage(), routeSettings);
       case resetPassword:
-        final email = routeSettings.arguments as String? ?? '';
-        return MaterialPageRoute(
-          builder: (_) => ResetPasswordPage(email: email),
+        return _page(
+          ResetPasswordPage(email: routeSettings.arguments as String? ?? ''),
+          routeSettings,
         );
       case profileForm:
-        return MaterialPageRoute(builder: (_) => const ProfileFormPage());
+        return _page(const ProfileFormPage(), routeSettings);
       case strengths:
-        return MaterialPageRoute(builder: (_) => const StrengthsPage());
+        return _page(const StrengthsPage(), routeSettings);
       case mainLayout:
-        return MaterialPageRoute(builder: (_) => const MainLayoutPage());
+        return _page(const MainLayoutPage(), routeSettings);
       case home:
-        return MaterialPageRoute(builder: (_) => const HomePage());
+        return _page(const HomePage(), routeSettings);
       case jobs:
-        return MaterialPageRoute(builder: (_) => const JobsPage());
+        return _page(const JobsPage(), routeSettings);
       case jobDetails:
         final job = routeSettings.arguments is JobEntity
             ? routeSettings.arguments as JobEntity
             : null;
-        return MaterialPageRoute(builder: (_) => JobDetailsPage(job: job));
+        return _page(JobDetailsPage(job: job), routeSettings);
       case jobSearch:
-        final query = routeSettings.arguments as String? ?? '';
-        return MaterialPageRoute(
-          builder: (_) => JobSearchResultsPage(query: query),
+        return _page(
+          JobSearchResultsPage(query: routeSettings.arguments as String? ?? ''),
+          routeSettings,
         );
+      case myApplications:
+        return _page(const MyApplicationsPage(), routeSettings);
       case messages:
-        return MaterialPageRoute(builder: (_) => const MessagesPage());
+        return _page(const MessagesPage(), routeSettings);
       case chat:
         final args = routeSettings.arguments;
-        String conversationId = '';
-        String userName = 'User';
-        String avatar = '';
+        var conversationId = '';
+        var userName = 'User';
+        var avatar = '';
         if (args is Map) {
           conversationId = args['conversationId'] as String? ?? '';
           userName = args['name'] as String? ?? 'User';
@@ -104,43 +139,116 @@ class AppRouter {
         } else if (args is String) {
           userName = args;
         }
-        return MaterialPageRoute(
-          builder: (_) => ChatPage(
+        return _page(
+          ChatPage(
             conversationId: conversationId,
             userName: userName,
             peerAvatar: avatar,
           ),
+          routeSettings,
         );
       case notifications:
-        return MaterialPageRoute(builder: (_) => const NotificationsPage());
+        return _page(const NotificationsPage(), routeSettings);
       case profile:
-        final userName = routeSettings.arguments as String?;
-        return MaterialPageRoute(
-          builder: (_) => user_profile.ProfilePage(userName: userName),
+        return _page(
+          user_profile.ProfilePage(userId: routeSettings.arguments as String?),
+          routeSettings,
+        );
+      case followList:
+        final args = routeSettings.arguments is Map
+            ? routeSettings.arguments as Map
+            : <String, dynamic>{};
+        return _page(
+          FollowersPage(
+            userId: args['userId'] as String? ?? '',
+            mode: args['mode'] as String? ?? 'followers',
+          ),
+          routeSettings,
         );
       case profileCreation:
-        return MaterialPageRoute(builder: (_) => const ProfileCreationPage());
+        return _page(const ProfileCreationPage(), routeSettings);
       case settings:
-        return MaterialPageRoute(builder: (_) => const SettingsPage());
+        return _page(const SettingsPage(), routeSettings);
+      case changePassword:
+        return _page(const ChangePasswordPage(), routeSettings);
       case network:
-        return MaterialPageRoute(builder: (_) => const NetworkPage());
-      case mainNav:
-        return MaterialPageRoute(builder: (_) => const MainNavPage());
+        return _page(const NetworkPage(), routeSettings);
+      case searchUsers:
+        return _page(const SearchUsersPage(), routeSettings);
       case companyCreation:
-        return MaterialPageRoute(builder: (_) => const CompanyCreationPage());
-      case postDetails:
-        final postId = routeSettings.arguments as String? ?? '';
-        return MaterialPageRoute(
-          builder: (_) => PostDetailsPage(postId: postId),
+        return _page(const CompanyCreationPage(), routeSettings);
+      case companyProfile:
+        final companyId = routeSettings.arguments as String?;
+        return _page(
+          companyId == null
+              ? const CompanyCreationPage()
+              : CompanyProfilePage(companyId: companyId),
+          routeSettings,
         );
+      case companyDashboard:
+        final dashboardCompanyId = routeSettings.arguments as String?;
+        return _page(
+          dashboardCompanyId == null
+              ? const CompanyCreationPage()
+              : CompanyDashboardPage(companyId: dashboardCompanyId),
+          routeSettings,
+        );
+      case wallet:
+        return _page(const WalletPage(), routeSettings);
+      case salaries:
+        return _page(const SalariesPage(), routeSettings);
+      case payments:
+        return _page(const PaymentsPage(), routeSettings);
+      case projects:
+        return _page(const ProjectsPage(), routeSettings);
+      case postDetails:
+        return _page(
+          PostDetailsPage(postId: routeSettings.arguments as String? ?? ''),
+          routeSettings,
+        );
+      case hashtagFeed:
+        return _page(
+          HashtagFeedPage(tag: routeSettings.arguments as String? ?? ''),
+          routeSettings,
+        );
+      case help:
+        return _page(const HelpSupportPage(), routeSettings);
+      case savedPosts:
+        return _page(const SavedPostsPage(), routeSettings);
+      case leaderboard:
+        return _page(const LeaderboardPage(), routeSettings);
+      case portfolio:
+        return _page(const PortfolioPage(), routeSettings);
+      case portfolioItem:
+        return _page(
+          PortfolioItemDetailsPage(
+            itemId: routeSettings.arguments as String? ?? '',
+          ),
+          routeSettings,
+        );
+      case about:
+        return _page(const AboutPage(), routeSettings);
       default:
-        return MaterialPageRoute(
-          builder: (_) => Scaffold(
+        return _page(
+          Scaffold(
             body: Center(
               child: Text('No route defined for ${routeSettings.name}'),
             ),
           ),
+          routeSettings,
         );
     }
+  }
+
+  static Route<dynamic> _page(Widget page, RouteSettings settings) {
+    if (settings.name == splash || settings.name == login) {
+      return PageRouteBuilder(
+        settings: settings,
+        pageBuilder: (context, animation, secondaryAnimation) => page,
+        transitionsBuilder: (_, animation, _, child) =>
+            FadeTransition(opacity: animation, child: child),
+      );
+    }
+    return appPageRoute(page, settings: settings);
   }
 }

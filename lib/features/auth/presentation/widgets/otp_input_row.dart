@@ -1,25 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/theme_colors.dart';
 
 class OtpInputRow extends StatelessWidget {
   final String otp;
   final int length;
 
-  const OtpInputRow({
-    super.key,
-    required this.otp,
-    this.length = 4,
-  });
+  const OtpInputRow({required this.otp, super.key, this.length = 4});
 
   @override
-  Widget build(BuildContext context) {
-    return Row(
+  Widget build(BuildContext context) => FittedBox(
+    fit: BoxFit.scaleDown,
+    child: Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(length, (index) {
-        bool isFocused = otp.length == index;
-        bool hasValue = otp.length > index;
-        String char = hasValue ? otp[index] : '';
+        final isFocused = otp.length == index;
+        final hasValue = otp.length > index;
+        final char = hasValue ? otp[index] : '';
 
         return Container(
           width: 70.w,
@@ -30,7 +28,7 @@ class OtpInputRow extends StatelessWidget {
             border: Border.all(
               color: isFocused || hasValue
                   ? AppColors.primaryDark
-                  : AppColors.indicatorInactive,
+                  : context.colors.inputBorder,
               width: 2.w,
             ),
           ),
@@ -52,6 +50,6 @@ class OtpInputRow extends StatelessWidget {
           ),
         );
       }),
-    );
-  }
+    ),
+  );
 }

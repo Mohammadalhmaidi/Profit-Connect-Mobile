@@ -21,29 +21,26 @@ class CompanyRepositoryImpl implements CompanyRepository {
     String? description,
     String? industry,
     String? website,
-    String? location,
+    Map<String, dynamic>? location,
     String? logo,
-  }) async {
-    return safeApiCallWithNetworkCheck(
-      networkInfo: networkInfo,
-      call: () => remoteDataSource.createCompany({
-        'name': name,
-        'description': description,
-        'industry': industry,
-        'website': website,
-        'location': location,
-        'logo': logo,
-      }),
-    );
-  }
+  }) async => safeApiCallWithNetworkCheck(
+    networkInfo: networkInfo,
+    call: () => remoteDataSource.createCompany({
+      'name': name,
+      'description': description,
+      'industry': industry,
+      'website': website,
+      'location': location,
+      'logo': logo,
+    }),
+  );
 
   @override
-  Future<Either<Failure, CompanyEntity>> getCompany(String companyId) async {
-    return safeApiCallWithNetworkCheck(
-      networkInfo: networkInfo,
-      call: () => remoteDataSource.getCompany(companyId),
-    );
-  }
+  Future<Either<Failure, CompanyEntity>> getCompany(String companyId) async =>
+      safeApiCallWithNetworkCheck(
+        networkInfo: networkInfo,
+        call: () => remoteDataSource.getCompany(companyId),
+      );
 
   @override
   Future<Either<Failure, CompanyEntity>> updateCompany({
@@ -54,17 +51,15 @@ class CompanyRepositoryImpl implements CompanyRepository {
     String? website,
     String? location,
     String? logo,
-  }) async {
-    return safeApiCallWithNetworkCheck(
-      networkInfo: networkInfo,
-      call: () => remoteDataSource.updateCompany(companyId, {
-        if (name != null) 'name': name,
-        if (description != null) 'description': description,
-        if (industry != null) 'industry': industry,
-        if (website != null) 'website': website,
-        if (location != null) 'location': location,
-        if (logo != null) 'logo': logo,
-      }),
-    );
-  }
+  }) async => safeApiCallWithNetworkCheck(
+    networkInfo: networkInfo,
+    call: () => remoteDataSource.updateCompany(companyId, {
+      if (name != null) 'name': name,
+      if (description != null) 'description': description,
+      if (industry != null) 'industry': industry,
+      if (website != null) 'website': website,
+      if (location != null) 'location': location,
+      if (logo != null) 'logo': logo,
+    }),
+  );
 }

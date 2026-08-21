@@ -1,240 +1,178 @@
+import '../../../../core/utils/time_formatter.dart';
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/di/dependency_injection.dart';
+import '../../../../core/presentation/widgets/stagger_entrance.dart';
+import '../../../../core/routes/app_router.dart';
+import '../../../../core/theme/theme_colors.dart';
+import '../../../../l10n/app_localizations.dart';
+import '../../../../api_service.dart';
+import '../../domain/entities/notification_entity.dart';
+import '../manager/notifications_cubit.dart';
+import '../manager/notifications_state.dart';
 import '../widgets/notification_tile.dart';
 
-class NotificationsPage extends StatelessWidget {
+class NotificationsPage extends StatefulWidget {
   const NotificationsPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 3,
-      child: Scaffold(
-        backgroundColor: Colors.white,
-        appBar: AppBar(
-          backgroundColor: Colors.white,
-          elevation: 0,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
-            onPressed: () => Navigator.pop(context),
-          ),
-          title: Text(
-            'Notifications',
-            style: TextStyle(
-              color: Colors.black,
-              fontSize: 18.sp,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          centerTitle: true,
-          actions: [
-            TextButton(
-              onPressed: () {},
-              child: Text(
-                'Mark all',
-                style: TextStyle(
-                  color: const Color(0xFF7B39FD),
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            SizedBox(width: 8.w),
-          ],
-          bottom: PreferredSize(
-            preferredSize: Size.fromHeight(60.h),
-            child: Container(
-              margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF3F4F6),
-                borderRadius: BorderRadius.circular(12.r),
-              ),
-              child: TabBar(
-                indicator: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10.r),
-                  color: Colors.white,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.05),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                labelColor: Colors.black,
-                unselectedLabelColor: AppColors.textSecondary,
-                labelStyle: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.bold),
-                tabs: const [
-                  Tab(text: 'All'),
-                  Tab(text: 'Jobs'),
-                  Tab(text: 'Social'),
-                ],
-              ),
-            ),
-          ),
+  State<NotificationsPage> createState() => _NotificationsPageState();
+}
+
+class _NotificationsPageState extends State<NotificationsPage> {
+  String _formatTime(BuildContext context, DateTime dateTime) =>
+      formatTimeAgo(context, dateTime);
+
+  IconData _iconFor(String type) {
+    switch (type) {
+      case 'post_liked':
+      case 'comment_liked':
+        return Icons.thumb_up_outlined;
+      case 'comment_added':
+        return Icons.chat_bubble_outline;
+      case 'post_shared':
+        return Icons.share_outlined;
+      case 'connection_request':
+        return Icons.person_add_alt_outlined;
+      case 'connection_accepted':
+        return Icons.handshake_outlined;
+      case 'job_application_status':
+        return Icons.work_outline;
+      case 'ai_detected':
+        return Icons.auto_awesome_outlined;
+      default:
+        return Icons.notifications_none;
+    }
+  }
+
+  void _openNotification(BuildContext context, NotificationEntity n) {
+    if (n.postId != null && n.postId!.isNotEmpty) {
+      Navigator.pushNamed(context, AppRouter.postDetails, arguments: n.postId);
+    }
+  }
+
+  @override
+  void dispose() {
+    // تعليم جميع الإشعارات كمقروءة عند مغادرة الصفحة
+    unawaited(sl<ApiService>().markAllNotificationsRead());
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    backgroundColor: context.colors.backgroundAlt,
+    appBar: AppBar(
+      backgroundColor: context.colors.surface,
+      elevation: 0,
+      leading: IconButton(
+        icon: Icon(
+          Icons.arrow_back_ios,
+          color: context.colors.textPrimary,
+          size: 20.sp,
         ),
-        body: ListView(
-          children: [
-            _buildSectionHeader('NEW'),
-            NotificationTile(
-              isUnread: true,
-              leading: _buildIconContainer(Icons.work, const Color(0xFFE1F5FE), const Color(0xFF03A9F4)),
-              title: TextSpan(
-                style: TextStyle(color: Colors.black, fontSize: 15.sp),
-                children: [
-                  const TextSpan(text: 'New Job: ', style: TextStyle(fontWeight: FontWeight.bold)),
-                  const TextSpan(text: 'Senior Product Designer at '),
-                  TextSpan(text: 'TechFlow', style: TextStyle(color: const Color(0xFF7B39FD), fontWeight: FontWeight.bold)),
-                  const TextSpan(text: ' matches your profile.'),
-                ],
+        onPressed: () => Navigator.pop(context),
+      ),
+      title: Text(
+        context.tr('nav.notifications'),
+        style: TextStyle(
+          color: context.colors.textPrimary,
+          fontSize: 18.sp,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      centerTitle: true,
+    ),
+    body: BlocProvider(
+      create: (_) => sl<NotificationsCubit>()..fetch(),
+      child: BlocBuilder<NotificationsCubit, NotificationsState>(
+        builder: (context, state) {
+          if (state is NotificationsLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (state is NotificationsError) {
+            return Center(
+              child: Text(
+                context.tr('error'),
+                style: TextStyle(color: context.colors.textSecondary),
               ),
-              time: '2h ago',
-              actions: [
-                NotificationActionButton(label: 'Apply Now', onPressed: () {}),
-              ],
-            ),
-            NotificationTile(
-              isUnread: true,
-              leading: _buildIconContainer(Icons.visibility, const Color(0xFFEDE7F6), const Color(0xFF7B39FD)),
-              title: TextSpan(
-                style: TextStyle(color: Colors.black, fontSize: 15.sp),
-                children: [
-                  const TextSpan(text: 'Profile View: ', style: TextStyle(fontWeight: FontWeight.bold)),
-                  const TextSpan(text: 'Someone at '),
-                  const TextSpan(text: 'Google', style: TextStyle(fontWeight: FontWeight.bold)),
-                  const TextSpan(text: ' and 3 others viewed your profile.'),
-                ],
-              ),
-              time: '4h ago',
-            ),
-            _buildSectionHeader('EARLIER'),
-            NotificationTile(
-              leading: _buildIconContainer(Icons.favorite, const Color(0xFFF3E5F5), const Color(0xFF7B39FD)),
-              title: TextSpan(
-                style: TextStyle(color: Colors.black, fontSize: 15.sp),
-                children: [
-                  const TextSpan(text: 'Sarah Jenkins', style: TextStyle(fontWeight: FontWeight.bold)),
-                  const TextSpan(text: ' liked your post: "5 Tips for Junior Devs entering the market".'),
-                ],
-              ),
-              time: '1d ago',
-            ),
-            NotificationTile(
-              leading: Stack(
-                children: [
-CircleAvatar(
-                      radius: 24.r,
-                      backgroundImage: const CachedNetworkImageProvider('https://i.pravatar.cc/150?u=james'),
+            );
+          }
+          if (state is NotificationsLoaded && state.notifications.isNotEmpty) {
+            return ListView.separated(
+              physics: const AlwaysScrollableScrollPhysics(),
+              itemCount: state.notifications.length,
+              separatorBuilder: (_, __) =>
+                  Divider(height: 1, color: context.colors.divider),
+              itemBuilder: (context, index) {
+                final item = state.notifications[index];
+                return StaggerEntrance(
+                  index: index,
+                  child: InkWell(
+                    onTap: () => _openNotification(context, item),
+                    child: NotificationTile(
+                      leading: CircleAvatar(
+                        radius: 24.w,
+                        backgroundColor: context.colors.chipUnselected,
+                        child: Icon(
+                          _iconFor(item.type),
+                          size: 22.sp,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                      ),
+                      title: TextSpan(
+                        text: item.message,
+                        style: TextStyle(
+                          color: context.colors.textPrimary,
+                          fontSize: 14.sp,
+                          height: 1.4,
+                        ),
+                      ),
+                      time: _formatTime(context, item.createdAt),
+                      isUnread: !item.read,
                     ),
-                  Positioned(
-                    bottom: 0,
-                    right: 0,
-                    child: Container(
-                      padding: EdgeInsets.all(2.w),
-                      decoration: const BoxDecoration(color: Color(0xFF4A148C), shape: BoxShape.circle),
-                      child: Icon(Icons.person_add, color: Colors.white, size: 10.sp),
+                  ),
+                );
+              },
+            );
+          }
+          return StaggerEntrance(
+            index: 0,
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.notifications_none,
+                    size: 64.sp,
+                    color: context.colors.textHint,
+                  ),
+                  SizedBox(height: 16.h),
+                  Text(
+                    context.tr('notifications.empty_title'),
+                    style: TextStyle(
+                      color: context.colors.textPrimary,
+                      fontSize: 18.sp,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: 8.h),
+                  Text(
+                    context.tr('notifications.empty_subtitle'),
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: context.colors.textSecondary,
+                      fontSize: 14.sp,
+                      height: 1.5,
                     ),
                   ),
                 ],
               ),
-              title: TextSpan(
-                style: TextStyle(color: Colors.black, fontSize: 15.sp),
-                children: [
-                  const TextSpan(text: 'James Miller', style: TextStyle(fontWeight: FontWeight.bold)),
-                  const TextSpan(text: ' invited you to connect. He also works at '),
-                  const TextSpan(text: 'TechFlow.', style: TextStyle(fontWeight: FontWeight.bold)),
-                ],
-              ),
-              time: '2d ago',
-              actions: [
-                NotificationActionButton(label: 'Accept', onPressed: () {}),
-                NotificationActionButton(label: 'Ignore', onPressed: () {}, isPrimary: false),
-              ],
             ),
-            NotificationTile(
-              leading: _buildIconContainer(Icons.work, const Color(0xFFE1F5FE), const Color(0xFF03A9F4)),
-              title: TextSpan(
-                style: TextStyle(color: Colors.black, fontSize: 15.sp),
-                children: [
-                  const TextSpan(text: 'Your application for '),
-                  const TextSpan(text: 'UX Researcher', style: TextStyle(fontWeight: FontWeight.bold)),
-                  const TextSpan(text: ' at '),
-                  const TextSpan(text: 'Figma', style: TextStyle(fontWeight: FontWeight.bold)),
-                  const TextSpan(text: ' was viewed.'),
-                ],
-              ),
-              time: '3d ago',
-            ),
-            NotificationTile(
-              leading: _buildIconContainer(Icons.chat_bubble, const Color(0xFFEDE7F6), const Color(0xFF7B39FD)),
-              title: TextSpan(
-                style: TextStyle(color: Colors.black, fontSize: 15.sp),
-                children: [
-                  const TextSpan(text: 'Marcus Thorne', style: TextStyle(fontWeight: FontWeight.bold)),
-                  const TextSpan(text: ' commented on your post: "Great insights on the new Figma update!"'),
-                ],
-              ),
-              time: '4d ago',
-            ),
-          ],
-        ),
-        bottomNavigationBar: _buildBottomNavigationBar(),
+          );
+        },
       ),
-    );
-  }
-
-  Widget _buildSectionHeader(String title) {
-    return Padding(
-      padding: EdgeInsets.only(left: 16.w, top: 24.h, bottom: 8.h),
-      child: Text(
-        title,
-        style: TextStyle(
-          color: AppColors.textHint,
-          fontSize: 12.sp,
-          fontWeight: FontWeight.bold,
-          letterSpacing: 1.2,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildIconContainer(IconData icon, Color bgColor, Color iconColor) {
-    return Container(
-      decoration: BoxDecoration(
-        color: bgColor,
-        shape: BoxShape.circle,
-      ),
-      child: Icon(icon, color: iconColor, size: 24.sp),
-    );
-  }
-
-  Widget _buildBottomNavigationBar() {
-    return BottomNavigationBar(
-      currentIndex: 3, // Alerts is index 3
-      type: BottomNavigationBarType.fixed,
-      selectedItemColor: const Color(0xFF7B39FD),
-      unselectedItemColor: AppColors.textHint,
-      selectedLabelStyle: TextStyle(fontSize: 10.sp, fontWeight: FontWeight.bold),
-      unselectedLabelStyle: TextStyle(fontSize: 10.sp),
-      items: [
-        const BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: 'HOME'),
-        const BottomNavigationBarItem(icon: Icon(Icons.people_outline), label: 'NETWORK'),
-        BottomNavigationBarItem(
-          icon: Container(
-            padding: EdgeInsets.all(4.w),
-            decoration: BoxDecoration(
-              color: AppColors.textHint,
-              borderRadius: BorderRadius.circular(4.r),
-            ),
-            child: const Icon(Icons.add, color: Colors.white),
-          ),
-          label: 'POST',
-        ),
-        const BottomNavigationBarItem(icon: Icon(Icons.notifications), label: 'ALERTS'),
-        const BottomNavigationBarItem(icon: Icon(Icons.work_outline), label: 'JOBS'),
-      ],
-    );
-  }
+    ),
+  );
 }

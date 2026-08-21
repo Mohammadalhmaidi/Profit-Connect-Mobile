@@ -42,26 +42,34 @@ class CompanyEntity extends Equatable {
     bool? isVerified,
     int? followersCount,
     double? averageRating,
-  }) {
-    return CompanyEntity(
-      id: id ?? this.id,
-      name: name ?? this.name,
-      logo: logo ?? this.logo,
-      description: description ?? this.description,
-      industry: industry ?? this.industry,
-      website: website ?? this.website,
-      location: location ?? this.location,
-      companySize: companySize ?? this.companySize,
-      ownerId: ownerId ?? this.ownerId,
-      isVerified: isVerified ?? this.isVerified,
-      followersCount: followersCount ?? this.followersCount,
-      averageRating: averageRating ?? this.averageRating,
-    );
-  }
+  }) => CompanyEntity(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    logo: logo ?? this.logo,
+    description: description ?? this.description,
+    industry: industry ?? this.industry,
+    website: website ?? this.website,
+    location: location ?? this.location,
+    companySize: companySize ?? this.companySize,
+    ownerId: ownerId ?? this.ownerId,
+    isVerified: isVerified ?? this.isVerified,
+    followersCount: followersCount ?? this.followersCount,
+    averageRating: averageRating ?? this.averageRating,
+  );
 
   @override
   List<Object?> get props => [
-        id, name, logo, description, industry, website, location,
-        companySize, ownerId, isVerified, followersCount, averageRating,
-      ];
+    id,
+    name,
+    logo,
+    description,
+    industry,
+    website,
+    location,
+    companySize,
+    ownerId,
+    isVerified,
+    followersCount,
+    averageRating,
+  ];
 }

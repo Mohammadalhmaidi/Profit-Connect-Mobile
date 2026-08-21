@@ -8,7 +8,10 @@ class SnackBarUtils {
       SnackBar(
         content: Text(
           message,
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+          ),
         ),
         backgroundColor: AppColors.accent,
         behavior: SnackBarBehavior.floating,
@@ -23,7 +26,10 @@ class SnackBarUtils {
       SnackBar(
         content: Text(
           failure.message,
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+          ),
         ),
         backgroundColor: AppColors.error,
         behavior: SnackBarBehavior.floating,
@@ -38,7 +44,10 @@ class SnackBarUtils {
       SnackBar(
         content: Text(
           message,
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+          ),
         ),
         backgroundColor: AppColors.error,
         behavior: SnackBarBehavior.floating,

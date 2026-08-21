@@ -15,6 +15,8 @@ abstract class PostRepository {
     List<String> hashtags = const [],
     String? mediaUrl,
     String? videoUrl,
+    String? imagePath,
+    String? videoPath,
     PostType postType = PostType.normal,
     String? budget,
     String? deadline,

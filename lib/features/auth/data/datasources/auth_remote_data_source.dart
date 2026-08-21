@@ -1,11 +1,9 @@
+import 'package:dio/dio.dart';
 import '../../../../api_service.dart';
 import '../models/user_model.dart';
 
 abstract class AuthRemoteDataSource {
-  Future<UserModel> login({
-    required String email,
-    required String password,
-  });
+  Future<UserModel> login({required String email, required String password});
 
   Future<UserModel> signup({
     required String firstName,
@@ -20,6 +18,8 @@ abstract class AuthRemoteDataSource {
     String? companyDescription,
     String? companyIndustry,
     String? companyLocation,
+    String? avatarPath,
+    String? gender,
   });
 
   Future<UserModel> getCurrentUser();
@@ -40,11 +40,18 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       data: {'email': email, 'password': password},
     );
     final data = response.data;
-    final map = data is Map ? Map<String, dynamic>.from(data) : const <String, dynamic>{};
+    final map = data is Map
+        ? Map<String, dynamic>.from(data)
+        : const <String, dynamic>{};
 
     final String? token = map['token'];
     if (token != null) {
       await _apiService.saveToken(token);
+    }
+
+    final String? refreshToken = map['refreshToken'];
+    if (refreshToken != null) {
+      await _apiService.saveRefreshToken(refreshToken);
     }
 
     final userJson = map['user'];
@@ -68,6 +75,8 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     String? companyDescription,
     String? companyIndustry,
     String? companyLocation,
+    String? avatarPath,
+    String? gender,
   }) async {
     // Backend expects multipart/form-data
     final formData = {
@@ -82,13 +91,15 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       if (companyDescription != null) 'companyDescription': companyDescription,
       if (companyIndustry != null) 'companyIndustry': companyIndustry,
       if (companyLocation != null) 'companyLocation': companyLocation,
+      if (gender != null) 'gender': gender,
     };
 
     final response = await _apiService.postMultipart(
       '/api/auth/signup',
       data: formData,
       files: {
-        // if (avatar != null) 'avatar': MultipartFile.fromBytes(...)
+        if (avatarPath != null && avatarPath.isNotEmpty)
+          'avatar': await MultipartFile.fromFile(avatarPath),
       },
       listFields: skills.isNotEmpty ? {'skills': skills} : null,
     );
@@ -102,6 +113,11 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       await _apiService.saveToken(token);
     }
 
+    final String? refreshToken = map['refreshToken'];
+    if (refreshToken != null) {
+      await _apiService.saveRefreshToken(refreshToken);
+    }
+
     final userJson = map['user'];
     if (userJson is! Map) {
       throw const FormatException('Missing user data in signup response');
@@ -113,7 +129,9 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   Future<UserModel> getCurrentUser() async {
     final response = await _apiService.get('/api/auth/me');
     final data = response.data;
-    final map = data is Map ? Map<String, dynamic>.from(data) : const <String, dynamic>{};
+    final map = data is Map
+        ? Map<String, dynamic>.from(data)
+        : const <String, dynamic>{};
     final userJson = map['user'];
     if (userJson is! Map) {
       throw const FormatException('Missing user data in /me response');

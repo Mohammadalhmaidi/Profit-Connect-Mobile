@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
@@ -10,22 +9,22 @@ class ConnectivityInterceptor extends Interceptor {
 
   @override
   void onRequest(
-    RequestOptions request,
+    RequestOptions options,
     RequestInterceptorHandler handler,
   ) async {
     if (kIsWeb) {
-      return handler.next(request);
+      return handler.next(options);
     }
     final hasConnection = await _connectionChecker.hasInternetAccess;
     if (!hasConnection) {
       return handler.reject(
         DioException(
-          requestOptions: request,
+          requestOptions: options,
           type: DioExceptionType.connectionError,
           message: 'No internet connection',
         ),
       );
     }
-    return handler.next(request);
+    return handler.next(options);
   }
 }

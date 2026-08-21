@@ -17,32 +17,38 @@ class CompanyModel extends CompanyEntity {
     super.averageRating,
   });
 
-  factory CompanyModel.fromJson(Map<String, dynamic> json) {
-    return CompanyModel(
-      id: (json['_id'] ?? json['id'] ?? '').toString(),
-      name: json['name'] ?? '',
-      logo: MediaUrlHelper.resolve(json['logo'] as String?),
-      description: json['description'] as String?,
-      industry: json['industry'] as String?,
-      website: json['website'] as String?,
-      location: json['location'] as String?,
-      companySize: json['companySize'] as String?,
-      ownerId: json['owner']?.toString() ?? json['ownerId']?.toString(),
-      isVerified: json['isVerified'] ?? json['status'] == 'Approved',
-      followersCount: json['followersCount'] ?? 0,
-      averageRating: (json['averageRating'] ?? 0).toDouble(),
-    );
+  factory CompanyModel.fromJson(Map<String, dynamic> json) => CompanyModel(
+    id: (json['_id'] ?? json['id'] ?? '').toString(),
+    name: json['name'] ?? '',
+    logo: MediaUrlHelper.resolve(json['logo'] as String?),
+    description: json['description'] as String?,
+    industry: json['industry'] as String?,
+    website: json['website'] as String?,
+    location: _locationToString(json['location']),
+    companySize: json['companySize'] as String?,
+    ownerId: json['owner']?.toString() ?? json['ownerId']?.toString(),
+    isVerified: json['isVerified'] ?? json['status'] == 'Approved',
+    followersCount: json['followersCount'] ?? 0,
+    averageRating: ((json['averageRating'] as num?) ?? 0).toDouble(),
+  );
+
+  static String? _locationToString(Object? location) {
+    if (location is String) return location;
+    if (location is Map) {
+      final country = location['country']?.toString() ?? '';
+      final city = location['city']?.toString() ?? '';
+      return [city, country].where((p) => p.isNotEmpty).join(', ');
+    }
+    return null;
   }
 
-  Map<String, dynamic> toJson() {
-    return {
-      'name': name,
-      'description': description,
-      'industry': industry,
-      'website': website,
-      'location': location,
-      'companySize': companySize,
-      'contactEmail': '', // optional
-    };
-  }
+  Map<String, dynamic> toJson() => {
+    'name': name,
+    'description': description,
+    'industry': industry,
+    'website': website,
+    'location': location,
+    'companySize': companySize,
+    'contactEmail': '', // optional
+  };
 }

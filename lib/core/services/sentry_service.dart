@@ -12,19 +12,14 @@ class SentryService {
   Future<void> initialize() async {
     if (_initialized) return;
 
-    await SentryFlutter.init(
-      (options) {
-        options.dsn = dotenv.env['SENTRY_DSN'];
-        options.tracesSampleRate = 0.1;
-        options.profilesSampleRate = 0.1;
-        options.enableTracing = true;
-        options.debug = !kReleaseMode;
-        options.attachThreads = true;
-        options.attachStacktrace = true;
-        options.sendDefaultPii = false;
-      },
-      appRunner: () {},
-    );
+    await SentryFlutter.init((options) {
+      options.dsn = dotenv.env['SENTRY_DSN'];
+      options.tracesSampleRate = 0.1;
+      options.debug = !kReleaseMode;
+      options.attachThreads = true;
+      options.attachStacktrace = true;
+      options.sendDefaultPii = false;
+    }, appRunner: () {});
 
     _initialized = true;
   }
@@ -32,7 +27,7 @@ class SentryService {
   static Future<void> init() async => _instance.initialize();
 
   Future<void> captureException(
-    dynamic exception, {
+    Object? exception, {
     StackTrace? stackTrace,
     Map<String, dynamic>? extra,
   }) async {
@@ -40,7 +35,13 @@ class SentryService {
     await Sentry.captureException(
       exception,
       stackTrace: stackTrace,
-      extra: extra,
+      withScope: extra != null
+          ? (scope) {
+              extra.forEach((key, value) {
+                scope.setContexts(key, value);
+              });
+            }
+          : null,
     );
   }
 

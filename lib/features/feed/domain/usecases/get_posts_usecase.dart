@@ -9,9 +9,8 @@ class GetPostsUseCase {
 
   GetPostsUseCase(this.repository);
 
-  Future<Either<Failure, List<PostEntity>>> call(GetPostsParams params) async {
-    return await repository.getPosts(page: params.page, limit: params.limit);
-  }
+  Future<Either<Failure, List<PostEntity>>> call(GetPostsParams params) async =>
+      repository.getPosts(page: params.page, limit: params.limit);
 }
 
 class GetPostsParams extends Equatable {

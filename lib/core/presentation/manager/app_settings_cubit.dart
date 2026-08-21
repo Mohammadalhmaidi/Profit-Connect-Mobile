@@ -11,21 +11,20 @@ class AppSettingsState extends Equatable {
   @override
   List<Object> get props => [locale];
 
-  AppSettingsState copyWith({Locale? locale}) {
-    return AppSettingsState(locale: locale ?? this.locale);
-  }
+  AppSettingsState copyWith({Locale? locale}) =>
+      AppSettingsState(locale: locale ?? this.locale);
 }
 
 class AppSettingsCubit extends Cubit<AppSettingsState> {
   final SharedPreferences sharedPreferences;
 
   AppSettingsCubit({required this.sharedPreferences})
-      : super(AppSettingsState(locale: _loadLocale(sharedPreferences)));
+    : super(AppSettingsState(locale: _loadLocale(sharedPreferences)));
 
   static Locale _loadLocale(SharedPreferences prefs) {
     final code = prefs.getString('locale_code');
     if (code == 'ar' || code == 'en') {
-      return Locale(code);
+      return Locale(code!);
     }
     return const Locale('en');
   }

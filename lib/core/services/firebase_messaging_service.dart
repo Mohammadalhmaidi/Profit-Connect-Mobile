@@ -3,12 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class FirebaseMessagingService {
-  static final FirebaseMessagingService _instance = FirebaseMessagingService._internal();
+  static final FirebaseMessagingService _instance =
+      FirebaseMessagingService._internal();
   factory FirebaseMessagingService() => _instance;
   FirebaseMessagingService._internal();
 
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
-  final FlutterLocalNotificationsPlugin _notificationsPlugin = FlutterLocalNotificationsPlugin();
+  final FlutterLocalNotificationsPlugin _notificationsPlugin =
+      FlutterLocalNotificationsPlugin();
 
   bool _initialized = false;
 
@@ -17,22 +19,23 @@ class FirebaseMessagingService {
   Future<void> initialize() async {
     if (_initialized) return;
 
-    await _firebaseMessaging.requestPermission(
-      alert: true,
-      badge: true,
-      sound: true,
-    );
+    await _firebaseMessaging.requestPermission();
 
     final fcmToken = await _firebaseMessaging.getToken();
     debugPrint('FCM Token: $fcmToken');
 
     FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
     FirebaseMessaging.onMessageOpenedApp.listen(_handleNotificationTap);
-    FirebaseMessaging.getInitialMessage().then(_handleNotificationTap);
+    _firebaseMessaging.getInitialMessage().then(_handleNotificationTap);
 
-    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const androidSettings = AndroidInitializationSettings(
+      '@mipmap/ic_launcher',
+    );
     const iosSettings = DarwinInitializationSettings();
-    const initSettings = InitializationSettings(android: androidSettings, iOS: iosSettings);
+    const initSettings = InitializationSettings(
+      android: androidSettings,
+      iOS: iosSettings,
+    );
 
     await _notificationsPlugin.initialize(initSettings);
 
@@ -46,7 +49,7 @@ class FirebaseMessagingService {
         message.messageId.hashCode,
         notification.title,
         notification.body,
-        NotificationDetails(
+        const NotificationDetails(
           android: AndroidNotificationDetails(
             'profit_connect_channel',
             'Profit Connect Notifications',
@@ -54,7 +57,7 @@ class FirebaseMessagingService {
             importance: Importance.high,
             priority: Priority.high,
           ),
-          iOS: const DarwinNotificationDetails(),
+          iOS: DarwinNotificationDetails(),
         ),
       );
     }
@@ -81,7 +84,5 @@ class FirebaseMessagingService {
     await _firebaseMessaging.unsubscribeFromTopic(topic);
   }
 
-  Future<String?> getFCMToken() async {
-    return await _firebaseMessaging.getToken();
-  }
+  Future<String?> getFCMToken() async => _firebaseMessaging.getToken();
 }

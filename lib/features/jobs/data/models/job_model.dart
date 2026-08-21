@@ -4,8 +4,8 @@ class JobModel extends JobEntity {
   const JobModel({
     required super.id,
     required super.title,
-    super.description,
     required super.companyId,
+    super.description,
     super.companyName,
     super.companyLogo,
     super.location,
@@ -27,24 +27,29 @@ class JobModel extends JobEntity {
       id: (json['_id'] ?? json['id']).toString(),
       title: json['title'] ?? '',
       description: json['description'] ?? '',
-      companyId: company?['_id']?.toString() ?? json['companyId']?.toString() ?? '',
+      companyId:
+          company?['_id']?.toString() ?? json['companyId']?.toString() ?? '',
       companyName: company?['name'] ?? json['companyName'] ?? '',
       companyLogo: company?['logo'] ?? json['companyLogo'] ?? '',
       location: json['location'] ?? '',
       salary: SalaryRange(
-        min: (salaryJson?['min'] ?? 0).toDouble(),
-        max: (salaryJson?['max'] ?? 0).toDouble(),
-        currency: salaryJson?['currency'] ?? 'USD',
+        min: ((salaryJson?['min'] as num?) ?? 0).toDouble(),
+        max: ((salaryJson?['max'] as num?) ?? 0).toDouble(),
+        currency: salaryJson?['currency'] as String? ?? 'USD',
       ),
       type: json['type'] ?? 'Full-time',
       workLevel: json['workLevel'] ?? 'Entry',
       workPlace: json['workPlace'] ?? 'On-site',
-      requirements: (json['requirements'] as List<dynamic>?)
+      requirements:
+          (json['requirements'] as List<dynamic>?)
               ?.map((e) => e.toString())
-              .toList() ?? [],
-      responsibilities: (json['responsibilities'] as List<dynamic>?)
+              .toList() ??
+          [],
+      responsibilities:
+          (json['responsibilities'] as List<dynamic>?)
               ?.map((e) => e.toString())
-              .toList() ?? [],
+              .toList() ??
+          [],
       status: json['status'] ?? 'Open',
       postedById: json['postedBy']?.toString() ?? '',
     );

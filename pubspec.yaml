@@ -22,7 +22,6 @@ dependencies:
   dio: ^5.5.0
   flutter_secure_storage: ^9.2.2
   shared_preferences: ^2.5.4
-  connectivity_plus: ^6.0.3
   flutter_dotenv: ^5.1.0
   
   # UI & Animation
@@ -34,7 +33,6 @@ dependencies:
   
   # Auth
   google_sign_in: ^6.2.2
-  sign_in_with_linkedin: ^1.4.0
   
   # Media & Files
   image_picker: ^1.1.2
@@ -44,21 +42,14 @@ dependencies:
   flutter_native_splash: ^2.4.4
   
   # Utilities
-  intl: ^0.19.0
+  intl: ^0.20.2
   package_info_plus: ^8.0.0
   url_launcher: ^6.2.5
-  share_plus: ^10.0.0
   permission_handler: ^11.3.1
   logger: ^2.7.0
-  talker: ^4.5.0
-  talker_flutter: ^4.5.0
-  
   # Infrastructure
   internet_connection_checker_plus: ^2.5.1
   app_links: ^6.3.3
-  web_socket_channel: ^3.0.2
-  http: ^1.2.2
-
   # Firebase
   firebase_core: ^3.1.0
   firebase_messaging: ^15.1.0
@@ -77,11 +68,8 @@ dev_dependencies:
   flutter_lints: ^4.0.0
   mocktail: ^1.0.4
   bloc_test: ^9.1.7
-  golden_toolkit: ^0.15.0
   integration_test:
     sdk: flutter
-  build_runner: ^2.4.12
-  very_good_analysis: ^6.0.0
   flutter_launcher_icons: ^0.14.4
 
 flutter_launcher_icons:
@@ -102,3 +90,7 @@ flutter:
   assets:
     - .env
     - assets/images/logo.svg
+
+dependency_overrides:
+  sentry_flutter: ^9.0.0
+  sentry: ^9.0.0

@@ -1,57 +1,56 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/theme_colors.dart';
 
 class CustomNumPad extends StatelessWidget {
   final Function(String) onDigitPressed;
   final VoidCallback onBackspacePressed;
 
   const CustomNumPad({
-    super.key,
     required this.onDigitPressed,
     required this.onBackspacePressed,
+    super.key,
   });
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: const Color(0xFFD2D4D9).withValues(alpha: 0.5), // iOS style keyboard background
-      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 20.h),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _buildRow(['1', '2', '3']),
-          SizedBox(height: 12.h),
-          _buildRow(['4', '5', '6']),
-          SizedBox(height: 12.h),
-          _buildRow(['7', '8', '9']),
-          SizedBox(height: 12.h),
-          Row(
-            children: [
-              const Expanded(child: SizedBox()),
-              _buildDigitButton('0'),
-              Expanded(
-                child: IconButton(
-                  onPressed: onBackspacePressed,
-                  icon: Icon(Icons.backspace_outlined, size: 24.sp, color: Colors.black),
+  Widget build(BuildContext context) => Container(
+    color: context.colors.surfaceMuted,
+    padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 20.h),
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _buildRow(context, ['1', '2', '3']),
+        SizedBox(height: 12.h),
+        _buildRow(context, ['4', '5', '6']),
+        SizedBox(height: 12.h),
+        _buildRow(context, ['7', '8', '9']),
+        SizedBox(height: 12.h),
+        Row(
+          children: [
+            const Expanded(child: SizedBox()),
+            _buildDigitButton(context, '0'),
+            Expanded(
+              child: IconButton(
+                onPressed: onBackspacePressed,
+                icon: Icon(
+                  Icons.backspace_outlined,
+                  size: 24.sp,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ),
-            ],
-          ),
-          SizedBox(height: ScreenUtil().bottomBarHeight),
-        ],
-      ),
-    );
-  }
+            ),
+          ],
+        ),
+        SizedBox(height: ScreenUtil().bottomBarHeight),
+      ],
+    ),
+  );
 
-  Widget _buildRow(List<String> digits) {
-    return Row(
-      children: digits.map((digit) => _buildDigitButton(digit)).toList(),
-    );
-  }
+  Widget _buildRow(BuildContext context, List<String> digits) =>
+      Row(children: digits.map((d) => _buildDigitButton(context, d)).toList());
 
-  Widget _buildDigitButton(String digit) {
-    String subtext = '';
+  Widget _buildDigitButton(BuildContext context, String digit) {
+    var subtext = '';
     if (digit == '2') subtext = 'A B C';
     if (digit == '3') subtext = 'D E F';
     if (digit == '4') subtext = 'G H I';
@@ -70,7 +69,7 @@ class CustomNumPad extends StatelessWidget {
           child: Container(
             height: 50.h,
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: context.colors.surface,
               borderRadius: BorderRadius.circular(8.r),
               boxShadow: [
                 BoxShadow(
@@ -85,12 +84,20 @@ class CustomNumPad extends StatelessWidget {
               children: [
                 Text(
                   digit,
-                  style: TextStyle(fontSize: 24.sp, fontWeight: FontWeight.w400, color: Colors.black),
+                  style: TextStyle(
+                    fontSize: 24.sp,
+                    fontWeight: FontWeight.w400,
+                    color: context.colors.textPrimary,
+                  ),
                 ),
                 if (subtext.isNotEmpty)
                   Text(
                     subtext,
-                    style: TextStyle(fontSize: 8.sp, fontWeight: FontWeight.bold, color: Colors.grey),
+                    style: TextStyle(
+                      fontSize: 8.sp,
+                      fontWeight: FontWeight.bold,
+                      color: context.colors.textSecondary,
+                    ),
                   ),
               ],
             ),

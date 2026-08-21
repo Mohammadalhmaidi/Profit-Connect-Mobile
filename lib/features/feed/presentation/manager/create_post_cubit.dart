@@ -28,13 +28,16 @@ class CreatePostFailure extends CreatePostState {
 class CreatePostCubit extends Cubit<CreatePostState> {
   final CreatePostUseCase createPostUseCase;
 
-  CreatePostCubit({required this.createPostUseCase}) : super(CreatePostInitial());
+  CreatePostCubit({required this.createPostUseCase})
+    : super(CreatePostInitial());
 
   Future<void> submit({
     required String content,
     List<String> hashtags = const [],
     String? mediaUrl,
     String? videoUrl,
+    String? imagePath,
+    String? videoPath,
     PostType postType = PostType.normal,
     String? budget,
     String? deadline,
@@ -47,6 +50,8 @@ class CreatePostCubit extends Cubit<CreatePostState> {
         hashtags: hashtags,
         mediaUrl: mediaUrl,
         videoUrl: videoUrl,
+        imagePath: imagePath,
+        videoPath: videoPath,
         postType: postType,
         budget: budget,
         deadline: deadline,

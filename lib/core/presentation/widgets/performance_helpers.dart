@@ -3,9 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 class ConditionedBlocBuilder<B extends BlocBase<S>, S>
     extends BlocBuilder<B, S> {
-  ConditionedBlocBuilder({
-    super.key,
+  const ConditionedBlocBuilder({
     required super.builder,
+    super.key,
     super.bloc,
     super.buildWhen,
   });
@@ -13,9 +13,9 @@ class ConditionedBlocBuilder<B extends BlocBase<S>, S>
 
 class ConditionedBlocListener<B extends BlocBase<S>, S>
     extends BlocListener<B, S> {
-  ConditionedBlocListener({
-    super.key,
+  const ConditionedBlocListener({
     required super.listener,
+    super.key,
     super.bloc,
     super.listenWhen,
     super.child,
@@ -27,11 +27,9 @@ extension BlocSelectorExtension<B extends BlocBase<S>, S> on BlocBuilder<B, S> {
     required B bloc,
     required S Function(S) selector,
     required Widget Function(BuildContext, S) builder,
-  }) {
-    return BlocBuilder<B, S>(
-      bloc: bloc,
-      buildWhen: (previous, current) => selector(previous) != selector(current),
-      builder: builder,
-    );
-  }
+  }) => BlocBuilder<B, S>(
+    bloc: bloc,
+    buildWhen: (previous, current) => selector(previous) != selector(current),
+    builder: builder,
+  );
 }

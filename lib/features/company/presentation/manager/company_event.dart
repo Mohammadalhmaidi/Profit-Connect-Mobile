@@ -11,7 +11,7 @@ class CreateCompanyEvent extends CompanyEvent {
   final String? description;
   final String? industry;
   final String? website;
-  final String? location;
+  final Map<String, dynamic>? location;
   final String? logo;
 
   const CreateCompanyEvent({
@@ -24,7 +24,16 @@ class CreateCompanyEvent extends CompanyEvent {
   });
 
   @override
-  List<Object?> get props => [name, description, industry, website, location, logo];
+  List<Object?> get props => [
+    name,
+    description,
+    industry,
+    website,
+    location,
+    logo,
+  ];
 }
 
-class ResetCompanyEvent extends CompanyEvent {}
+class ResetCompanyEvent extends CompanyEvent {
+  const ResetCompanyEvent();
+}

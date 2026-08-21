@@ -21,6 +21,8 @@ abstract class AuthRepository {
     String? companyDescription,
     String? companyIndustry,
     String? companyLocation,
+    String? avatarPath,
+    String? gender,
   });
 
   Future<Either<Failure, UserEntity>> getCurrentUser();

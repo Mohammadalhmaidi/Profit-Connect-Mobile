@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../deep_linking/deep_link_builder.dart';
 import '../di/dependency_injection.dart';
 import '../../api_service.dart';
 
 class PostInteractions {
   static void copyPostLink(BuildContext context, String postId) {
-    final link = 'https://profit.app/post/$postId';
+    final link = DeepLinkBuilder.post(postId);
     Clipboard.setData(ClipboardData(text: link));
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(

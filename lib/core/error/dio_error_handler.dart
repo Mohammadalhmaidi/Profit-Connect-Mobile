@@ -20,6 +20,9 @@ Failure handleDioError(DioException e) {
     case DioExceptionType.badCertificate:
       return const ServerFailure('Bad certificate');
 
+    case DioExceptionType.transformTimeout:
+      return const TimeoutFailure();
+
     case DioExceptionType.unknown:
       return UnexpectedFailure(e.message ?? 'Unknown error occurred');
   }
@@ -28,13 +31,19 @@ Failure handleDioError(DioException e) {
 Failure _handleStatusCode(DioException e) {
   final statusCode = e.response?.statusCode;
   final data = e.response?.data;
-  final message = data is Map ? (data['message'] ?? data['error'] ?? 'Unknown error') : 'Unknown error';
+  final message = data is Map
+      ? (data['message'] ?? data['error'] ?? 'Unknown error')
+      : 'Unknown error';
 
   switch (statusCode) {
     case 400:
       return ValidationFailure(
         message is String ? message : 'Validation failed',
-        errors: data is Map ? (data['errors'] is Map<String, dynamic> ? data['errors'] as Map<String, dynamic> : null) : null,
+        errors: data is Map
+            ? (data['errors'] is Map<String, dynamic>
+                  ? data['errors'] as Map<String, dynamic>
+                  : null)
+            : null,
       );
     case 401:
       return UnauthorizedFailure(message is String ? message : 'Unauthorized');
@@ -45,7 +54,11 @@ Failure _handleStatusCode(DioException e) {
     case 422:
       return ValidationFailure(
         message is String ? message : 'Validation failed',
-        errors: data is Map ? (data['errors'] is Map<String, dynamic> ? data['errors'] as Map<String, dynamic> : null) : null,
+        errors: data is Map
+            ? (data['errors'] is Map<String, dynamic>
+                  ? data['errors'] as Map<String, dynamic>
+                  : null)
+            : null,
       );
     case 500:
       return const ServerFailure('Internal server error', statusCode: 500);

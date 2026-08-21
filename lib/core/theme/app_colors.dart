@@ -8,7 +8,7 @@ class AppColors {
   static const Color background = Color(0xFFFAFAFA);
 
   // Legacy/Semantic Colors (Mapped to new identity where possible)
-  static const Color primaryDark = primary; 
+  static const Color primaryDark = primary;
   static const Color secondaryDark = Color(0xFF0B1033);
   static const Color vibrantPurple = Color(0xFF7B39FD);
   static const Color accentCyan = accent;
@@ -18,17 +18,14 @@ class AppColors {
   static const LinearGradient backgroundGradient = LinearGradient(
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
-    colors: [
-      primary,
-      secondaryDark,
-    ],
+    colors: [primary, secondaryDark],
   );
 
   // Backgrounds
   static const Color backgroundAlt = Color(0xFFF8F9FE);
   static const Color fieldBackground = Color(0xFFF7F7FB);
   static const Color cardBackground = Color(0xFFFFFFFF);
-  
+
   // Text Colors
   static const Color textPrimary = Color(0xFF1B0330);
   static const Color textSecondary = Color(0xFF7D7D9E);

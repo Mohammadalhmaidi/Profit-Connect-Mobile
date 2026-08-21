@@ -4,7 +4,10 @@ import '../models/company_model.dart';
 abstract class CompanyRemoteDataSource {
   Future<CompanyModel> createCompany(Map<String, dynamic> data);
   Future<CompanyModel> getCompany(String companyId);
-  Future<CompanyModel> updateCompany(String companyId, Map<String, dynamic> data);
+  Future<CompanyModel> updateCompany(
+    String companyId,
+    Map<String, dynamic> data,
+  );
 }
 
 class CompanyRemoteDataSourceImpl implements CompanyRemoteDataSource {
@@ -30,8 +33,14 @@ class CompanyRemoteDataSourceImpl implements CompanyRemoteDataSource {
   }
 
   @override
-  Future<CompanyModel> updateCompany(String companyId, Map<String, dynamic> data) async {
-    final response = await _apiService.put('/api/companies/$companyId', data: data);
+  Future<CompanyModel> updateCompany(
+    String companyId,
+    Map<String, dynamic> data,
+  ) async {
+    final response = await _apiService.put(
+      '/api/companies/$companyId',
+      data: data,
+    );
     final body = response.data as Map<String, dynamic>;
     final companyJson = body['data'] as Map<String, dynamic>? ?? body;
     return CompanyModel.fromJson(companyJson);

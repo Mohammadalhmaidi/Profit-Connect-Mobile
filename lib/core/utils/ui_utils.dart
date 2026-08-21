@@ -11,7 +11,10 @@ class UIUtils {
       SnackBar(
         content: Text(
           message,
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+          ),
         ),
         backgroundColor: isError ? AppColors.error : AppColors.successGreen,
         behavior: SnackBarBehavior.floating,

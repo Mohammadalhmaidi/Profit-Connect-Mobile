@@ -15,9 +15,7 @@ class ThemeBloc extends Bloc<ThemeMode, ThemeState> {
   final SharedPreferences sharedPreferences;
 
   ThemeBloc({required this.sharedPreferences})
-      : super(ThemeState(
-          themeMode: _loadTheme(sharedPreferences),
-        )) {
+    : super(ThemeState(themeMode: _loadTheme(sharedPreferences))) {
     on<ThemeMode>((event, emit) {
       _saveTheme(event);
       emit(ThemeState(themeMode: event));
@@ -36,10 +34,29 @@ class ThemeBloc extends Bloc<ThemeMode, ThemeState> {
     sharedPreferences.setInt('theme_mode', mode.index);
   }
 
-  void toggleTheme() {
-    final next = state.themeMode == ThemeMode.light
-        ? ThemeMode.dark
-        : ThemeMode.light;
-    add(next);
+  /// Resolves whether dark is currently on, honoring the system brightness
+  /// when the mode is [ThemeMode.system].
+  bool isDark(Brightness? platformBrightness) {
+    final mode = state.themeMode;
+    if (mode == ThemeMode.dark) return true;
+    if (mode == ThemeMode.light) return false;
+    return platformBrightness == Brightness.dark;
+  }
+
+  /// Sets an explicit dark/light mode (deterministic for server sync).
+  void setDark({required bool value}) {
+    add(value ? ThemeMode.dark : ThemeMode.light);
+  }
+
+  /// Cycles the switch in a way that "turns dark on" the first time it is
+  /// tapped, even from the default [ThemeMode.system] state.
+  void toggleTheme({Brightness? platformBrightness}) {
+    final current = state.themeMode;
+    final isCurrentlyDark = switch (current) {
+      ThemeMode.dark => true,
+      ThemeMode.light => false,
+      ThemeMode.system => platformBrightness == Brightness.dark,
+    };
+    add(isCurrentlyDark ? ThemeMode.light : ThemeMode.dark);
   }
 }

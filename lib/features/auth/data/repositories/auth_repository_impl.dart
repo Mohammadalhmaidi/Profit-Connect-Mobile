@@ -13,6 +13,7 @@ class AuthRepositoryImpl implements AuthRepository {
   final NetworkInfo networkInfo;
 
   static const _tokenKey = 'auth_token';
+  static const _refreshTokenKey = 'auth_refresh_token';
 
   AuthRepositoryImpl({
     required this.remoteDataSource,
@@ -24,12 +25,10 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<Either<Failure, UserEntity>> login({
     required String email,
     required String password,
-  }) async {
-    return safeApiCallWithNetworkCheck(
-      networkInfo: networkInfo,
-      call: () => remoteDataSource.login(email: email, password: password),
-    );
-  }
+  }) async => safeApiCallWithNetworkCheck(
+    networkInfo: networkInfo,
+    call: () => remoteDataSource.login(email: email, password: password),
+  );
 
   @override
   Future<Either<Failure, UserEntity>> signup({
@@ -45,33 +44,34 @@ class AuthRepositoryImpl implements AuthRepository {
     String? companyDescription,
     String? companyIndustry,
     String? companyLocation,
-  }) async {
-    return safeApiCallWithNetworkCheck(
-      networkInfo: networkInfo,
-      call: () => remoteDataSource.signup(
-        firstName: firstName,
-        lastName: lastName,
-        email: email,
-        password: password,
-        role: role,
-        skills: skills,
-        phoneNumber: phoneNumber,
-        industry: industry,
-        companyName: companyName,
-        companyDescription: companyDescription,
-        companyIndustry: companyIndustry,
-        companyLocation: companyLocation,
-      ),
-    );
-  }
+    String? avatarPath,
+    String? gender,
+  }) async => safeApiCallWithNetworkCheck(
+    networkInfo: networkInfo,
+    call: () => remoteDataSource.signup(
+      firstName: firstName,
+      lastName: lastName,
+      email: email,
+      password: password,
+      role: role,
+      skills: skills,
+      phoneNumber: phoneNumber,
+      industry: industry,
+      companyName: companyName,
+      companyDescription: companyDescription,
+      companyIndustry: companyIndustry,
+      companyLocation: companyLocation,
+      avatarPath: avatarPath,
+      gender: gender,
+    ),
+  );
 
   @override
-  Future<Either<Failure, UserEntity>> getCurrentUser() async {
-    return safeApiCallWithNetworkCheck(
-      networkInfo: networkInfo,
-      call: () => remoteDataSource.getCurrentUser(),
-    );
-  }
+  Future<Either<Failure, UserEntity>> getCurrentUser() async =>
+      safeApiCallWithNetworkCheck(
+        networkInfo: networkInfo,
+        call: remoteDataSource.getCurrentUser,
+      );
 
   @override
   Future<void> saveToken(String token) async {
@@ -79,13 +79,12 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<String?> getToken() async {
-    return await secureStorage.read(key: _tokenKey);
-  }
+  Future<String?> getToken() async => secureStorage.read(key: _tokenKey);
 
   @override
   Future<void> logout() async {
     await secureStorage.delete(key: _tokenKey);
+    await secureStorage.delete(key: _refreshTokenKey);
   }
 
   @override

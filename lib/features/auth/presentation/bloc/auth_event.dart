@@ -32,6 +32,8 @@ class SignupSubmitted extends AuthEvent {
   final String password;
   final String role;
   final List<String> skills;
+  final String? avatarPath;
+  final String? gender;
 
   const SignupSubmitted({
     required this.firstName,
@@ -40,10 +42,21 @@ class SignupSubmitted extends AuthEvent {
     required this.password,
     required this.role,
     this.skills = const [],
+    this.avatarPath,
+    this.gender,
   });
 
   @override
-  List<Object?> get props => [firstName, lastName, email, password, role, skills];
+  List<Object?> get props => [
+    firstName,
+    lastName,
+    email,
+    password,
+    role,
+    skills,
+    avatarPath,
+    gender,
+  ];
 }
 
 class LogoutRequested extends AuthEvent {}
@@ -65,25 +78,4 @@ class GoogleSignInRequested extends AuthEvent {
 
   @override
   List<Object?> get props => [idToken, email, firstName, lastName, avatar];
-}
-
-class LinkedInSignInRequested extends AuthEvent {
-  final String accessToken;
-  final String email;
-  final String? firstName;
-  final String? lastName;
-  final String? avatar;
-  final String? headline;
-
-  const LinkedInSignInRequested({
-    required this.accessToken,
-    required this.email,
-    this.firstName,
-    this.lastName,
-    this.avatar,
-    this.headline,
-  });
-
-  @override
-  List<Object?> get props => [accessToken, email, firstName, lastName, avatar, headline];
 }

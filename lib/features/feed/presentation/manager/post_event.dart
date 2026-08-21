@@ -1,4 +1,4 @@
-import 'package:equatable/equatable.dart';
+part of 'post_bloc.dart';
 
 abstract class PostEvent extends Equatable {
   const PostEvent();
@@ -12,11 +12,7 @@ class GetPostsEvent extends PostEvent {
   final int limit;
   final bool refresh;
 
-  const GetPostsEvent({
-    this.page = 1,
-    this.limit = 10,
-    this.refresh = false,
-  });
+  const GetPostsEvent({this.page = 1, this.limit = 10, this.refresh = false});
 
   @override
   List<Object?> get props => [page, limit, refresh];

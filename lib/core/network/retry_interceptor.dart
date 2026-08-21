@@ -13,11 +13,10 @@ class RetryInterceptor extends Interceptor {
   });
 
   @override
-  void onError(
-    DioException err,
-    ErrorInterceptorHandler handler,
-  ) async {
-    final isRetryableStatus = retryStatusCodes.contains(err.response?.statusCode);
+  void onError(DioException err, ErrorInterceptorHandler handler) async {
+    final isRetryableStatus = retryStatusCodes.contains(
+      err.response?.statusCode,
+    );
     final isIdempotentMethod =
         err.requestOptions.method == 'GET' ||
         err.requestOptions.method == 'HEAD' ||
@@ -27,10 +26,12 @@ class RetryInterceptor extends Interceptor {
       return handler.next(err);
     }
 
-    int retryCount = 0;
+    var retryCount = 0;
     while (retryCount < maxRetries) {
       retryCount++;
-      await Future.delayed(retryDelay * retryCount);
+      // احترام رأس Retry-After إن وُجد (خاصة 429)، وإلا تأجيل تصاعدي
+      final delay = _retryAfterDelay(err) ?? retryDelay * retryCount;
+      await Future.delayed(delay);
 
       try {
         final response = await _retryRequest(err.requestOptions);
@@ -45,9 +46,28 @@ class RetryInterceptor extends Interceptor {
     handler.next(err);
   }
 
+  Duration? _retryAfterDelay(DioException err) {
+    final raw = err.response?.headers.value('retry-after');
+    if (raw == null || raw.isEmpty) return null;
+    final seconds = int.tryParse(raw);
+    if (seconds != null && seconds > 0) {
+      return Duration(seconds: seconds.clamp(0, 30));
+    }
+    final date = DateTime.tryParse(raw);
+    if (date != null) {
+      final diff = date.difference(DateTime.now());
+      if (diff > Duration.zero) {
+        return diff > const Duration(seconds: 30)
+            ? const Duration(seconds: 30)
+            : diff;
+      }
+    }
+    return null;
+  }
+
   Future<Response> _retryRequest(RequestOptions requestOptions) async {
     final dio = Dio();
-    dio.options.baseUrl = requestOptions.baseUrl ?? '';
+    dio.options.baseUrl = requestOptions.baseUrl;
     dio.options.connectTimeout = const Duration(seconds: 10);
     dio.options.receiveTimeout = const Duration(seconds: 10);
 

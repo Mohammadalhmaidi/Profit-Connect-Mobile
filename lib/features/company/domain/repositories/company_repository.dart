@@ -8,7 +8,7 @@ abstract class CompanyRepository {
     String? description,
     String? industry,
     String? website,
-    String? location,
+    Map<String, dynamic>? location,
     String? logo,
   });
 

@@ -1,5 +1,7 @@
 class Validators {
-  static final RegExp _emailRegex = RegExp(r"^[a-zA-Z0-9+_.-]+@[a-zA-Z0-9.-]+$");
+  static final RegExp _emailRegex = RegExp(
+    r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
+  );
 
   static String? email(String? value) {
     if (value == null || value.trim().isEmpty) return 'Email is required';
@@ -10,9 +12,13 @@ class Validators {
   static String? password(String? value) {
     if (value == null || value.isEmpty) return 'Password is required';
     if (value.length < 8) return 'At least 8 characters';
-    if (!RegExp(r'[A-Z]').hasMatch(value)) return 'Must contain an uppercase letter';
-    if (!RegExp(r'[a-z]').hasMatch(value)) return 'Must contain a lowercase letter';
-    if (!RegExp(r'[0-9]').hasMatch(value)) return 'Must contain a number';
+    if (!RegExp('[A-Z]').hasMatch(value)) {
+      return 'Must contain an uppercase letter';
+    }
+    if (!RegExp('[a-z]').hasMatch(value)) {
+      return 'Must contain a lowercase letter';
+    }
+    if (!RegExp('[0-9]').hasMatch(value)) return 'Must contain a number';
     return null;
   }
 

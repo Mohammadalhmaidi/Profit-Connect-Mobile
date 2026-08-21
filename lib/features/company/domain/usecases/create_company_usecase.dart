@@ -8,16 +8,16 @@ class CreateCompanyUseCase {
   final CompanyRepository repository;
   CreateCompanyUseCase(this.repository);
 
-  Future<Either<Failure, CompanyEntity>> call(CreateCompanyParams params) async {
-    return await repository.createCompany(
-      name: params.name,
-      description: params.description,
-      industry: params.industry,
-      website: params.website,
-      location: params.location,
-      logo: params.logo,
-    );
-  }
+  Future<Either<Failure, CompanyEntity>> call(
+    CreateCompanyParams params,
+  ) async => repository.createCompany(
+    name: params.name,
+    description: params.description,
+    industry: params.industry,
+    website: params.website,
+    location: params.location,
+    logo: params.logo,
+  );
 }
 
 class CreateCompanyParams extends Equatable {
@@ -25,7 +25,7 @@ class CreateCompanyParams extends Equatable {
   final String? description;
   final String? industry;
   final String? website;
-  final String? location;
+  final Map<String, dynamic>? location;
   final String? logo;
 
   const CreateCompanyParams({
@@ -38,5 +38,12 @@ class CreateCompanyParams extends Equatable {
   });
 
   @override
-  List<Object?> get props => [name, description, industry, website, location, logo];
+  List<Object?> get props => [
+    name,
+    description,
+    industry,
+    website,
+    location,
+    logo,
+  ];
 }
